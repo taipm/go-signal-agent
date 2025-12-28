@@ -46,6 +46,18 @@ Thumbs.db
 /bin/
 /dist/
 
+# Compiled example binaries
+chatbot
+chatbot-memory
+chatbot-yaml
+
+# Output directories
+_bmad-output/
+
+# Backup directories
+*.bk.*
+.bk.*
+
 # Debug files
 __debug_bin*
 

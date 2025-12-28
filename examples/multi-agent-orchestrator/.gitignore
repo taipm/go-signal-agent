@@ -1,0 +1,8 @@
+# Environment files
+.env
+
+# Storage directory
+storage/
+
+# Build artifacts
+multi-agent-orchestrator

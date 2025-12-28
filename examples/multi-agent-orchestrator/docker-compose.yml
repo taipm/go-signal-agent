@@ -1,0 +1,73 @@
+# Multi-Agent Orchestrator with Ollama
+# Run: docker-compose up -d
+
+version: '3.8'
+
+services:
+  # ==========================================================================
+  # OLLAMA LLM SERVICE
+  # ==========================================================================
+  ollama:
+    image: ollama/ollama:latest
+    container_name: orchestrator-ollama
+    volumes:
+      - ollama-data:/root/.ollama
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # ==========================================================================
+  # MODEL INITIALIZATION (one-time setup)
+  # ==========================================================================
+  ollama-init:
+    image: ollama/ollama:latest
+    container_name: orchestrator-ollama-init
+    depends_on:
+      ollama:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Pulling qwen3:1.7b model..."
+        ollama pull qwen3:1.7b
+        echo "Model ready!"
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+
+  # ==========================================================================
+  # MULTI-AGENT ORCHESTRATOR
+  # ==========================================================================
+  orchestrator:
+    build:
+      context: ../..
+      dockerfile: examples/multi-agent-orchestrator/Dockerfile
+    container_name: orchestrator-app
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - CONFIG_PATH=/app/config/agents.yaml
+      - MEMORY_STORAGE_DIR=/app/storage
+    volumes:
+      - orchestrator-storage:/app/storage
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+
+volumes:
+  ollama-data:
+    driver: local
+  orchestrator-storage:
+    driver: local
+
+networks:
+  default:
+    name: orchestrator-network
