@@ -118,12 +118,21 @@ func (e *Engine) OnError(hook ErrorHook) {
 // Calling Start on an already running engine is a no-op.
 func (e *Engine) Start() {
 	e.mu.Lock()
+	defer e.mu.Unlock()
+
 	if e.running {
-		e.mu.Unlock()
 		return
 	}
 	e.running = true
-	e.mu.Unlock()
+
+	// Reset done channel if restarting (in case Stop was called before)
+	select {
+	case <-e.done:
+		// Channel was closed, recreate it
+		e.done = make(chan struct{})
+	default:
+		// Channel is open, continue
+	}
 
 	// Spin up worker goroutines
 	for i := 0; i < e.config.WorkerCount; i++ {

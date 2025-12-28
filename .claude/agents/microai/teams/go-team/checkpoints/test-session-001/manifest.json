@@ -1,0 +1,39 @@
+{
+  "session_id": "test-session-001",
+  "topic": "user-authentication-service",
+  "created_at": "2025-12-28T21:00:00Z",
+  "updated_at": "2025-12-28T21:45:00Z",
+  "checkpoints": [
+    {
+      "id": "cp-01-init-20251228-210000",
+      "step": 1,
+      "step_name": "init",
+      "timestamp": "2025-12-28T21:00:00Z",
+      "valid": true
+    },
+    {
+      "id": "cp-02-requirements-20251228-211500",
+      "step": 2,
+      "step_name": "requirements",
+      "timestamp": "2025-12-28T21:15:00Z",
+      "valid": true
+    },
+    {
+      "id": "cp-03-architecture-20251228-213000",
+      "step": 3,
+      "step_name": "architecture",
+      "timestamp": "2025-12-28T21:30:00Z",
+      "valid": true
+    },
+    {
+      "id": "cp-04-implementation-20251228-214500",
+      "step": 4,
+      "step_name": "implementation",
+      "timestamp": "2025-12-28T21:45:00Z",
+      "valid": true
+    }
+  ],
+  "current_checkpoint": "cp-04-implementation-20251228-214500",
+  "current_step": 4,
+  "rollback_history": []
+}

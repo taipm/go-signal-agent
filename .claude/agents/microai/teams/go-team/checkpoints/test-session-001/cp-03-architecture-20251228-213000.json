@@ -1,0 +1,42 @@
+{
+  "id": "cp-03-architecture-20251228-213000",
+  "session_id": "test-session-001",
+  "step_number": 3,
+  "step_name": "architecture",
+  "created_at": "2025-12-28T21:30:00Z",
+  "state": {
+    "topic": "user-authentication-service",
+    "date": "2025-12-28",
+    "phase": "architecture",
+    "current_agent": "architect-agent",
+    "current_step": 3,
+    "iteration_count": 0,
+    "max_iterations": 3,
+    "breakpoint_active": true,
+    "metrics": {
+      "build_pass": false,
+      "test_coverage": 0,
+      "lint_clean": false,
+      "race_free": false
+    }
+  },
+  "outputs": {
+    "spec": "[from previous checkpoint]",
+    "architecture": "# User Authentication Service - Architecture\n\n## Pattern Selection\n**Clean Architecture** with layered approach\n\n## Package Structure\n```\ncmd/\n  auth-service/\n    main.go              # Entry point, DI wiring\ninternal/\n  handler/\n    auth_handler.go      # HTTP handlers\n    middleware.go        # Auth middleware\n  service/\n    auth_service.go      # Business logic\n    token_service.go     # JWT operations\n  repo/\n    user_repo.go         # User repository interface\n    postgres_repo.go     # PostgreSQL implementation\n  model/\n    user.go              # User domain model\n    token.go             # Token model\n  errors/\n    errors.go            # Custom errors\npkg/\n  validator/\n    validator.go         # Input validation\nconfigs/\n  config.go              # Configuration\n```\n\n## Interface Definitions\n\n### Handler Layer\n```go\ntype AuthHandler interface {\n    Register(w http.ResponseWriter, r *http.Request)\n    Login(w http.ResponseWriter, r *http.Request)\n}\n```\n\n### Service Layer\n```go\ntype AuthService interface {\n    Register(ctx context.Context, email, password string) (*User, error)\n    Login(ctx context.Context, email, password string) (*Token, error)\n}\n\ntype TokenService interface {\n    Generate(userID string) (string, error)\n    Validate(token string) (*Claims, error)\n}\n```\n\n### Repository Layer\n```go\ntype UserRepository interface {\n    Create(ctx context.Context, user *User) error\n    FindByEmail(ctx context.Context, email string) (*User, error)\n    FindByID(ctx context.Context, id string) (*User, error)\n}\n```\n\n## Data Flow\n```\nHTTP Request\n    ↓\nHandler (validate input, parse request)\n    ↓\nService (business logic, orchestration)\n    ↓\nRepository (data access)\n    ↓\nDatabase\n```\n\n## Dependencies\n- github.com/golang-jwt/jwt/v5 (JWT)\n- golang.org/x/crypto/bcrypt (password hashing)\n- github.com/lib/pq (PostgreSQL driver)\n- github.com/go-chi/chi/v5 (HTTP router)\n\n## Security Considerations\n- Bcrypt for password hashing (cost=12)\n- JWT with HS256, 24h expiry\n- Rate limiting on auth endpoints\n- Input validation on all endpoints",
+    "code_files": [],
+    "test_files": [],
+    "review_comments": [],
+    "optimizations": [],
+    "release_config": null
+  },
+  "files": {
+    "created": ["docs/go-team/spec.md", "docs/go-team/architecture.md"],
+    "modified": []
+  },
+  "git": {
+    "enabled": true,
+    "branch": "go-team/test-session-001",
+    "commit_hash": "c3d4e5f6789012345678901234567890abcdef01"
+  },
+  "checksum": "sha256:a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a"
+}
