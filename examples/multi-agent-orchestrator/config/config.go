@@ -51,11 +51,11 @@ func getEnvInt(key string, fallback int) int {
 
 // Config represents the full configuration
 type Config struct {
-	Ollama      OllamaConfig           `yaml:"ollama"`
-	Memory      MemoryConfig           `yaml:"memory"`
-	Coordinator CoordinatorConfig      `yaml:"coordinator"`
+	Ollama      OllamaConfig            `yaml:"ollama"`
+	Memory      MemoryConfig            `yaml:"memory"`
+	Coordinator CoordinatorConfig       `yaml:"coordinator"`
 	Workers     map[string]WorkerConfig `yaml:"workers"`
-	Output      OutputConfig           `yaml:"output"`
+	Output      OutputConfig            `yaml:"output"`
 }
 
 // OllamaConfig holds Ollama connection settings
@@ -108,13 +108,13 @@ type WorkerMemory struct {
 
 // OutputConfig holds output agent settings
 type OutputConfig struct {
-	ID              string `yaml:"id"`
-	Model           string `yaml:"model"`
+	ID              string  `yaml:"id"`
+	Model           string  `yaml:"model"`
 	Temperature     float64 `yaml:"temperature"`
-	MergeStrategy   string `yaml:"merge_strategy"`
-	ResponseTimeout string `yaml:"response_timeout"`
-	StreamOutput    bool   `yaml:"stream_output"`
-	SystemPrompt    string `yaml:"system_prompt"`
+	MergeStrategy   string  `yaml:"merge_strategy"`
+	ResponseTimeout string  `yaml:"response_timeout"`
+	StreamOutput    bool    `yaml:"stream_output"`
+	SystemPrompt    string  `yaml:"system_prompt"`
 }
 
 // ResolvedWorkerMemory holds fully resolved memory config for a worker

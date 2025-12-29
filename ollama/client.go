@@ -26,10 +26,10 @@ import (
 // =============================================================================
 
 const (
-	DefaultEndpoint    = "http://localhost:11434"
-	DefaultModel       = "qwen3:1.7b"
-	DefaultTimeout     = 120 * time.Second // Longer timeout for streaming
-	MaxErrorBodySize   = 4 * 1024          // 4KB max for error response body
+	DefaultEndpoint  = "http://localhost:11434"
+	DefaultModel     = "qwen3:1.7b"
+	DefaultTimeout   = 120 * time.Second // Longer timeout for streaming
+	MaxErrorBodySize = 4 * 1024          // 4KB max for error response body
 )
 
 // ClientConfig holds configuration for the Ollama client.
@@ -100,7 +100,7 @@ func (c *Client) GenerateStream(ctx context.Context, prompt string, callback Str
 	req := GenerateRequest{
 		Model:  c.getModel(),
 		Prompt: prompt,
-		Stream: true, // Always stream
+		Stream: true,
 	}
 
 	body, err := json.Marshal(req)
@@ -108,56 +108,10 @@ func (c *Client) GenerateStream(ctx context.Context, prompt string, callback Str
 		return fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	httpReq, err := http.NewRequestWithContext(ctx, "POST",
-		c.config.Endpoint+"/api/generate", bytes.NewReader(body))
-	if err != nil {
-		return fmt.Errorf("failed to create request: %w", err)
-	}
-	httpReq.Header.Set("Content-Type", "application/json")
-
-	resp, err := c.httpClient.Do(httpReq)
-	if err != nil {
-		return fmt.Errorf("failed to send request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		// Limit error body read to prevent memory exhaustion
-		bodyBytes, _ := io.ReadAll(io.LimitReader(resp.Body, MaxErrorBodySize))
-		return fmt.Errorf("ollama API error (status %d): %s", resp.StatusCode, string(bodyBytes))
-	}
-
-	// Read streaming response line by line
-	scanner := bufio.NewScanner(resp.Body)
-	for scanner.Scan() {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		default:
-		}
-
-		line := scanner.Bytes()
-		if len(line) == 0 {
-			continue
-		}
-
-		var chunk GenerateResponse
-		if err := json.Unmarshal(line, &chunk); err != nil {
-			continue // Skip malformed lines
-		}
-
-		if chunk.Response != "" {
-			if err := callback(chunk.Response); err != nil {
-				return err // Callback requested stop
-			}
-		}
-
-		if chunk.Done {
-			break
-		}
-	}
-
-	return scanner.Err()
+	return doStreamRequest(c, ctx, "/api/generate", body, callback,
+		func(chunk *GenerateResponse) (string, bool) {
+			return chunk.Response, chunk.Done
+		})
 }
 
 // ChatStream sends a conversation and streams the response.
@@ -166,7 +120,7 @@ func (c *Client) ChatStream(ctx context.Context, messages []Message, callback St
 	req := ChatRequest{
 		Model:    c.getModel(),
 		Messages: messages,
-		Stream:   true, // Always stream
+		Stream:   true,
 	}
 
 	body, err := json.Marshal(req)
@@ -174,8 +128,32 @@ func (c *Client) ChatStream(ctx context.Context, messages []Message, callback St
 		return fmt.Errorf("failed to marshal request: %w", err)
 	}
 
+	return doStreamRequest(c, ctx, "/api/chat", body, callback,
+		func(chunk *ChatResponse) (string, bool) {
+			return chunk.Message.Content, chunk.Done
+		})
+}
+
+// =============================================================================
+// INTERNAL HELPERS
+// =============================================================================
+
+// chunkExtractor extracts content and done flag from a response chunk.
+type chunkExtractor[T any] func(*T) (content string, done bool)
+
+// doStreamRequest performs a streaming HTTP request and processes chunks.
+// This is the core streaming logic shared by GenerateStream and ChatStream.
+// Note: Go methods cannot have type parameters, so this is a package-level function.
+func doStreamRequest[T any](
+	c *Client,
+	ctx context.Context,
+	endpoint string,
+	body []byte,
+	callback StreamCallback,
+	extract chunkExtractor[T],
+) error {
 	httpReq, err := http.NewRequestWithContext(ctx, "POST",
-		c.config.Endpoint+"/api/chat", bytes.NewReader(body))
+		c.config.Endpoint+endpoint, bytes.NewReader(body))
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
@@ -188,9 +166,7 @@ func (c *Client) ChatStream(ctx context.Context, messages []Message, callback St
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		// Limit error body read to prevent memory exhaustion
-		bodyBytes, _ := io.ReadAll(io.LimitReader(resp.Body, MaxErrorBodySize))
-		return fmt.Errorf("ollama API error (status %d): %s", resp.StatusCode, string(bodyBytes))
+		return readErrorBody(resp)
 	}
 
 	scanner := bufio.NewScanner(resp.Body)
@@ -206,23 +182,31 @@ func (c *Client) ChatStream(ctx context.Context, messages []Message, callback St
 			continue
 		}
 
-		var chunk ChatResponse
+		var chunk T
 		if err := json.Unmarshal(line, &chunk); err != nil {
-			continue
+			continue // Skip malformed lines
 		}
 
-		if chunk.Message.Content != "" {
-			if err := callback(chunk.Message.Content); err != nil {
-				return err
+		content, done := extract(&chunk)
+		if content != "" {
+			if err := callback(content); err != nil {
+				return err // Callback requested stop
 			}
 		}
 
-		if chunk.Done {
+		if done {
 			break
 		}
 	}
 
 	return scanner.Err()
+}
+
+// readErrorBody reads and formats an error response from the API.
+// Limits read size to prevent memory exhaustion from large error responses.
+func readErrorBody(resp *http.Response) error {
+	bodyBytes, _ := io.ReadAll(io.LimitReader(resp.Body, MaxErrorBodySize))
+	return fmt.Errorf("ollama API error (status %d): %s", resp.StatusCode, string(bodyBytes))
 }
 
 // =============================================================================

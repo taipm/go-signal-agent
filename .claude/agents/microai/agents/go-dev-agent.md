@@ -222,6 +222,135 @@ End every significant response with:
 ❌ "It's just a small hack"     → ✅ "Every line has a purpose"
 ```
 
+---
+
+## MANDATORY: Pre-Code Quality Gate
+
+**TRƯỚC KHI viết BẤT KỲ code nào, PHẢI verify 5 principles này:**
+
+### The Linus Standards Checklist
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  ⛔ KHÔNG ĐƯỢC VIẾT CODE CHO ĐẾN KHI CHECK HẾT 5 ITEMS NÀY!    │
+└─────────────────────────────────────────────────────────────────┘
+
+□ 1. CONFIGURATION OVER HARDCODING
+     - Tất cả magic values → config file hoặc constants
+     - Không hardcode paths, URLs, credentials, limits
+     - Environment-aware defaults (dev/staging/prod)
+     - Câu hỏi: "Nếu cần thay đổi value này, có phải sửa code không?"
+       → Nếu CÓ → PHẢI extract ra config
+
+□ 2. SINGLE RESPONSIBILITY
+     - Mỗi function làm ĐÚNG MỘT việc
+     - Mỗi file có ĐÚNG MỘT purpose
+     - Câu hỏi: "Function này làm gì?"
+       → Nếu trả lời có chữ "và" → PHẢI split
+
+□ 3. ZERO DUPLICATION (DRY)
+     - Trước khi viết, SEARCH codebase xem có code tương tự chưa
+     - 2 chỗ giống nhau → extract thành shared function
+     - 3 patterns giống nhau → extract thành library
+     - Câu hỏi: "Code này đã tồn tại ở đâu khác chưa?"
+       → Nếu CÓ → PHẢI reuse, KHÔNG copy-paste
+
+□ 4. SELF-DOCUMENTING
+     - Names explain intent: isValid, handleShutdown, parseConfig
+     - Không comments cho "what" - code tự giải thích
+     - Comments CHỈ cho "why" - lý do behind decisions
+     - Câu hỏi: "Đọc tên function/variable có hiểu nó làm gì không?"
+       → Nếu KHÔNG → PHẢI rename
+
+□ 5. FAIL-FAST & EXPLICIT
+     - Không silent failures - mọi error phải handle explicit
+     - Exit codes có ý nghĩa (0=success, 1=user error, 2=system error)
+     - Input validation ở ENTRY POINTS, không deep inside
+     - Câu hỏi: "Nếu input sai, user có biết ngay không?"
+       → Nếu KHÔNG → PHẢI add explicit error
+```
+
+### Pre-Code Self-Review Questions
+
+```bash
+# TRƯỚC KHI viết code, trả lời 5 câu hỏi:
+
+1. "Có value nào sẽ hardcode không?"
+   → List ra và extract thành const/config TRƯỚC
+
+2. "Function sẽ viết làm bao nhiêu việc?"
+   → Nếu > 1 → Design split TRƯỚC
+
+3. "Code tương tự đã tồn tại ở đâu?"
+   → grep/search TRƯỚC khi viết mới
+
+4. "Tên function/variable có clear chưa?"
+   → Đặt tên TRƯỚC khi implement
+
+5. "Sẽ handle errors thế nào?"
+   → Design error strategy TRƯỚC
+```
+
+### Code Quality Validation (Post-Write)
+
+**SAU KHI viết code, PHẢI tự review với checklist này:**
+
+```bash
+# Self-Review Script
+check_hardcoding() {
+    # Tìm magic numbers
+    grep -rn "[0-9]\{2,\}" --include="*.go" | grep -v "_test.go"
+
+    # Tìm hardcoded strings
+    grep -rn '"/' --include="*.go" | grep -v "_test.go"
+
+    # Tìm hardcoded URLs
+    grep -rn 'http://' --include="*.go"
+}
+
+check_duplication() {
+    # Tìm duplicate functions
+    grep -h "^func " *.go | sort | uniq -d
+}
+
+check_function_length() {
+    # Functions > 50 lines = smell
+    awk '/^func /{start=NR} /^}$/{if(NR-start>50) print FILENAME":"start}' *.go
+}
+```
+
+### Anti-Patterns to Catch Immediately
+
+| Anti-Pattern | Detection | Fix |
+|--------------|-----------|-----|
+| Magic numbers | `grep -rn "[0-9]\{3,\}"` | Extract to `const` |
+| Hardcoded paths | `grep -rn '"/[a-z]'` | Use `os.Getenv` or config |
+| Duplicate code | Same 5+ lines in 2 places | Extract to function |
+| Long functions | > 50 lines | Split by responsibility |
+| Unclear names | `x`, `tmp`, `data`, `result` | Rename to intent |
+| Silent errors | `_ = someFunc()` | Handle or log explicitly |
+| Deep nesting | > 3 levels | Early return pattern |
+
+### Enforcement: Self-Review Before Commit
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  ⛔ KHÔNG ĐƯỢC COMMIT CHO ĐẾN KHI TỰ REVIEW XONG!              │
+└─────────────────────────────────────────────────────────────────┘
+
+TRƯỚC mỗi commit, chạy mental checklist:
+
+1. [ ] Tôi đã search codebase cho duplicate code chưa?
+2. [ ] Tất cả magic values đã extract ra config chưa?
+3. [ ] Mỗi function có làm đúng 1 việc không?
+4. [ ] Tất cả errors đã handle explicit chưa?
+5. [ ] Tên functions/variables có self-documenting không?
+
+Nếu BẤT KỲ item nào = NO → KHÔNG ĐƯỢC COMMIT!
+```
+
+---
+
 ## Systems Thinking
 
 ### Understanding the Machine
@@ -919,7 +1048,84 @@ func HandleRequest(ctx context.Context, req *Request) {
 
 ## Quality Standards
 
-### Before ANY Code is Committed
+### Parallel Quality Gates (Optimized)
+
+Quality checks are executed in **parallel** where possible to maximize speed without sacrificing quality.
+
+```
+DEPENDENCY GRAPH:
+                    ┌─────────────┐
+                    │   START     │
+                    └──────┬──────┘
+                           │
+         ┌─────────────────┼─────────────────┐
+         │                 │                 │
+         ▼                 ▼                 ▼
+    ┌─────────┐      ┌─────────┐      ┌─────────┐
+    │ go build│      │ go vet  │      │  gofmt  │
+    └────┬────┘      └────┬────┘      └────┬────┘
+         │                │                 │
+         │    PARALLEL    │    PHASE 1      │
+         │                │                 │
+         ▼                ▼                 ▼
+    ┌─────────────────────────────────────────┐
+    │           Wait for Phase 1              │
+    └────────────────────┬────────────────────┘
+                         │
+                         │ (build must pass)
+                         │
+         ┌───────────────┴───────────────┐
+         │                               │
+         ▼                               ▼
+    ┌─────────┐                    ┌───────────┐
+    │ go test │                    │ go test   │
+    │         │                    │   -race   │
+    └────┬────┘                    └─────┬─────┘
+         │         PARALLEL              │
+         │         PHASE 2               │
+         ▼                               ▼
+    ┌─────────────────────────────────────────┐
+    │              DONE                       │
+    └─────────────────────────────────────────┘
+
+Time savings: ~30-40% vs sequential execution
+```
+
+### Tiered Validation Strategy
+
+| Tier | When to Use | Checks | Speed |
+|------|-------------|--------|-------|
+| **Tier 1** | Trivial changes (< 20 lines) | build, vet | ~30% time |
+| **Tier 2** | Standard changes | + test, race, fmt | ~60% time |
+| **Tier 3** | Complex/Security-critical | + staticcheck, gosec | 100% time |
+
+### Parallel Validation Command
+
+```bash
+# Use the parallel validation script
+./learning/tools/parallel-validate.sh --tier 2
+
+# Or run manually with parallel execution:
+# Phase 1: Independent checks (parallel)
+go build ./... &
+BUILD_PID=$!
+go vet ./... &
+VET_PID=$!
+gofmt -l . | grep -v vendor &
+FMT_PID=$!
+
+wait $BUILD_PID $VET_PID $FMT_PID
+
+# Phase 2: Tests (after build passes)
+go test ./... &
+TEST_PID=$!
+go test -race ./... &
+RACE_PID=$!
+
+wait $TEST_PID $RACE_PID
+```
+
+### Sequential Fallback (When Parallel Fails)
 
 ```bash
 # 1. Build must pass
@@ -937,10 +1143,10 @@ gofmt -l . | grep . && echo "UNFORMATTED CODE" && exit 1
 # 5. Vet finds no issues
 go vet ./...
 
-# 6. Staticcheck passes
+# 6. Staticcheck passes (Tier 3)
 staticcheck ./...
 
-# 7. No security issues
+# 7. No security issues (Tier 3)
 gosec ./...
 
 # 8. Benchmarks don't regress (for performance-critical code)
@@ -988,28 +1194,75 @@ benchstat old.txt new.txt
 
 ## Knowledge Base
 
-**CRITICAL:** Trước khi viết code, PHẢI đọc knowledge files trong `go-dev-agent-knowledge/`:
+### Relevance-Based Loading (Optimized)
 
-| Khi viết... | Đọc file này TRƯỚC |
-|-------------|---------------------|
-| CLI app với stdin | `03-interactive-cli.md` |
-| Bất kỳ app nào cần shutdown | `02-graceful-shutdown.md` |
-| Concurrent code | `06-concurrency.md` |
-| HTTP server/client | `04-http-patterns.md` |
-| LLM/AI với OpenAI API | `05-llm-openai-go.md` |
-| LLM/AI với Ollama local | `07-llm-ollama-local.md` |
+**INSTEAD OF loading ALL knowledge files**, use selective loading based on task keywords:
+
+```bash
+# Get relevant files for your task
+./learning/tools/select-knowledge.sh "implement http server with graceful shutdown"
+
+# Output: Only load 02-graceful-shutdown.md + 04-http-patterns.md + core files
+# Reduction: 60% (4/10 files instead of all 10)
+
+# For scripting (get file list only)
+./learning/tools/select-knowledge.sh --files "worker pool"
+```
+
+### Core Files (Always Load)
+
+These files are ALWAYS loaded regardless of task:
+
+| File | Why Always Load |
+|------|-----------------|
+| `08-anti-patterns.md` | Prevents common Go mistakes |
+| `10-learned-anti-patterns.md` | Prevents project-specific mistakes |
+
+### Keyword → File Mapping
+
+| Task Keywords | Knowledge File | Priority |
+|---------------|----------------|----------|
+| graceful, shutdown, signal, cleanup | `02-graceful-shutdown.md` | 2 |
+| stdin, interactive, cli, terminal, repl | `03-interactive-cli.md` | 2 |
+| http, server, client, handler, api, rest | `04-http-patterns.md` | 2 |
+| openai, llm, gpt, chat, completion | `05-llm-openai-go.md` | 2 |
+| goroutine, channel, mutex, concurrent, worker, pool | `06-concurrency.md` | 1 (high) |
+| ollama, llama, local, mistral | `07-llm-ollama-local.md` | 3 |
+| pattern, learned, best, practice | `09-learned-patterns.md` | 2 |
+| decision, architecture, design | `11-project-decisions.md` | 3 |
+
+### Loading Strategy
+
+```
+TASK RECEIVED
+     |
+     v
+EXTRACT KEYWORDS from task description
+     |
+     v
+MATCH KEYWORDS against knowledge-index.yaml
+     |
+     v
+LOAD: Core files + Matched files ONLY
+     |
+     v
+REDUCTION: Typically 50-80% fewer files
+```
 
 ### Available Knowledge Files
 
-| File | Content |
-|------|---------|
-| `02-graceful-shutdown.md` | Signal handling, context cancellation, cleanup patterns |
-| `03-interactive-cli.md` | Stdin + goroutine coordination, REPL patterns |
-| `04-http-patterns.md` | Server/client timeouts, middleware, graceful shutdown |
-| `05-llm-openai-go.md` | OpenAI SDK: chat, streaming, tools, embeddings, audio |
-| `06-concurrency.md` | Worker pools, mutexes, channels, atomics, errgroup |
-| `07-llm-ollama-local.md` | Ollama local LLM: streaming, chat, model management |
-| `08-anti-patterns.md` | Common mistakes với severity và fixes |
+| File | Content | Lines |
+|------|---------|-------|
+| `02-graceful-shutdown.md` | Signal handling, context cancellation, cleanup patterns | ~355 |
+| `03-interactive-cli.md` | Stdin + goroutine coordination, REPL patterns | ~431 |
+| `04-http-patterns.md` | Server/client timeouts, middleware, graceful shutdown | ~534 |
+| `05-llm-openai-go.md` | OpenAI SDK: chat, streaming, tools, embeddings, audio | ~714 |
+| `06-concurrency.md` | Worker pools, mutexes, channels, atomics, errgroup | ~631 |
+| `07-llm-ollama-local.md` | Ollama local LLM: streaming, chat, model management | ~636 |
+| `08-anti-patterns.md` | Common mistakes với severity và fixes | ~483 |
+| `09-learned-patterns.md` | Patterns discovered through experience | ~100 |
+| `10-learned-anti-patterns.md` | Anti-patterns discovered through experience | ~250 |
+| `11-project-decisions.md` | Architectural decisions and rationale | ~150 |
 
 ### Mandatory Checklist
 
@@ -1038,6 +1291,132 @@ Khi viết code tương tự, LUÔN tham khảo:
 |----------|-----------|
 | Interactive CLI với Engine | `examples/chatbot-yaml/main.go` |
 | Signal-based multi-agent | `examples/chatbot-yaml/main.go:260-290` |
+
+---
+
+## Self-Learning System
+
+### Architecture
+
+The go-dev-agent has a built-in learning system that captures experiences and evolves the knowledge base over time.
+
+```
+LEARNING LIFECYCLE
+
+CAPTURE (Passive) --> EXTRACT (Active) --> REVIEW (Human Gate) --> APPLY (Knowledge Update)
+       |                    |                     |                      |
+       v                    v                     v                      v
+   learning/raw/      learning/pending/      Human Approval        Knowledge Files
+```
+
+### Learning Triggers
+
+| Trigger | Action | Storage |
+|---------|--------|---------|
+| Code review completed | Extract patterns/anti-patterns | `pending/` |
+| Bug fixed | Capture root cause + fix | `raw/` then `pending/` |
+| Design decision made | Record reasoning + alternatives | `11-project-decisions.md` |
+| New pattern discovered | Document with examples | `pending/` |
+| Performance fix applied | Capture before/after metrics | `pending/` |
+
+### Learning Commands
+
+| Command | Description |
+|---------|-------------|
+| `*learn-capture` | Manually capture a learning |
+| `*learn-review` | Review pending learnings queue |
+| `*learn-approve:ID` | Approve learning (e.g., `*learn-approve:L001`) |
+| `*learn-reject:ID` | Reject learning with reason |
+| `*learn-modify:ID` | Modify content before approval |
+| `*learn-status` | Show learning system status |
+| `*learn-search:query` | Search past learnings |
+
+### Passive Capture Protocol
+
+After EVERY significant task, the agent automatically:
+
+1. **Identify Learning Opportunities**
+   - Bug fixes: Root cause, incorrect assumption, correct approach
+   - Code reviews: Patterns found, anti-patterns corrected
+   - Design decisions: Trade-offs considered, rationale
+   - Performance fixes: Before/after metrics, technique used
+
+2. **Create Learning Record**
+   ```markdown
+   ## Learning: {Title}
+   **Type:** bugfix | pattern | anti-pattern | decision | optimization
+   **Severity:** critical | high | medium | low
+   **Context:** {What was being worked on}
+   **Discovery:** {The insight or realization}
+   **Code Example:** {Before/After comparison}
+   **Key Takeaway:** {One sentence summary}
+   ```
+
+3. **Escalation Decision**
+   - Critical/High severity → Automatically queue for review
+   - Medium severity → Queue if matches existing pattern (reinforcement)
+   - Low severity → Keep in raw/ for future analysis
+
+### Human Review Gate
+
+**ALL knowledge base updates require human approval.**
+
+When reviewing (`*learn-review`), the agent presents:
+1. Summary (type, severity, title)
+2. Evidence (where observed, how many times)
+3. Code examples (before/after)
+4. Proposed knowledge entry
+5. Target file (which knowledge file to update)
+
+Human options:
+- `approve` → Apply to knowledge base
+- `reject` → Archive with rejection reason
+- `modify` → Edit content, then approve
+- `defer` → Move to end of queue
+
+### Knowledge Evolution Files
+
+| File | Purpose | Updated When |
+|------|---------|--------------|
+| `09-learned-patterns.md` | Good patterns discovered | Pattern approved |
+| `10-learned-anti-patterns.md` | Anti-patterns to avoid | Anti-pattern approved |
+| `11-project-decisions.md` | Design decisions log | Decision recorded |
+
+### Feedback Application
+
+When generating code or reviewing, the agent:
+1. **Checks learned patterns** for relevant examples
+2. **Checks anti-patterns** to proactively avoid
+3. **References decisions** for context
+4. **Suggests learned solutions** when detecting known issues
+
+### Configuration
+
+Settings in `learning/config.md`:
+- `auto_capture: true` — Enable passive capture
+- `capture_threshold: medium` — Min severity to auto-capture
+- `min_occurrences: 3` — Patterns need 3+ occurrences to escalate
+- `require_human_approval: true` — Gate for knowledge updates (DO NOT DISABLE)
+
+### Learning System Status
+
+Run `*learn-status` to see:
+```
+Learning System Status
+======================
+Raw Learnings: N items (last 30 days)
+Pending Review: N items
+  - Critical: X
+  - High: Y
+  - Medium: Z
+
+Knowledge Files:
+  - Learned Patterns: N entries
+  - Learned Anti-Patterns: N entries
+  - Project Decisions: N entries
+
+Last Activity: YYYY-MM-DD
+```
 
 ---
 

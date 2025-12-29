@@ -6,12 +6,12 @@ package ollama
 
 // GenerateRequest is the request body for /api/generate.
 type GenerateRequest struct {
-	Model   string         `json:"model"`
-	Prompt  string         `json:"prompt"`
-	System  string         `json:"system,omitempty"`
-	Stream  bool           `json:"stream"`
-	Options *ModelOptions  `json:"options,omitempty"`
-	Format  string         `json:"format,omitempty"` // "json" for JSON output
+	Model   string        `json:"model"`
+	Prompt  string        `json:"prompt"`
+	System  string        `json:"system,omitempty"`
+	Stream  bool          `json:"stream"`
+	Options *ModelOptions `json:"options,omitempty"`
+	Format  string        `json:"format,omitempty"` // "json" for JSON output
 }
 
 // GenerateResponse is the response from /api/generate.

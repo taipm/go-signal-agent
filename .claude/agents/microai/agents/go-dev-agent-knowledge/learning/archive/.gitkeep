@@ -1,0 +1,11 @@
+# Archive Directory
+
+This directory contains reviewed learnings organized by month.
+
+Structure: `YYYY-MM/{date}-{id}.md`
+
+Each archived item includes:
+- Original learning content
+- Review decision (approved/rejected/modified)
+- Reviewer notes
+- Date of decision

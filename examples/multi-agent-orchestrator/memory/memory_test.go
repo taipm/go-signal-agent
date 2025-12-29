@@ -112,9 +112,9 @@ func TestStore_GetRecent(t *testing.T) {
 	}{
 		{"get 3", 3, 3, "9"},
 		{"get 5", 5, 5, "9"},
-		{"get 0", 0, 10, "9"},      // 0 means all
-		{"get -1", -1, 10, "9"},    // negative means all
-		{"get 100", 100, 10, "9"},  // more than available
+		{"get 0", 0, 10, "9"},     // 0 means all
+		{"get -1", -1, 10, "9"},   // negative means all
+		{"get 100", 100, 10, "9"}, // more than available
 	}
 
 	for _, tt := range tests {
@@ -192,8 +192,8 @@ func TestStore_Clear(t *testing.T) {
 func TestStore_Stats(t *testing.T) {
 	store := NewStore("test", "conv", 100, time.Hour, "")
 
-	store.Add(Entry{Role: "user", Content: "Hello"})           // 4 + 5 = 9
-	store.Add(Entry{Role: "assistant", Content: "Hi there"})   // 9 + 8 = 17
+	store.Add(Entry{Role: "user", Content: "Hello"})         // 4 + 5 = 9
+	store.Add(Entry{Role: "assistant", Content: "Hi there"}) // 9 + 8 = 17
 
 	stats := store.Stats()
 
