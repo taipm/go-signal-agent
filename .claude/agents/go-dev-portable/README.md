@@ -13,15 +13,91 @@ A self-contained, portable Go development agent with Linus Torvalds-style qualit
 ## Quick Install
 
 ```bash
-# Clone or download this package
-git clone <repo> /tmp/go-dev-portable
+# Clone the repository
+git clone https://github.com/taipm/go-signal-agent.git
 
-# Install to current project
+# Install to your Go project
 cd /your/go/project
-/tmp/go-dev-portable/install.sh
+/path/to/go-signal-agent/.claude/agents/go-dev-portable/install.sh
 
 # Or install globally (available in all projects)
-/tmp/go-dev-portable/install.sh --global
+/path/to/go-signal-agent/.claude/agents/go-dev-portable/install.sh --global
+```
+
+---
+
+## Detailed Migration Scenarios
+
+### Scenario 1: New Project on Same Machine
+
+```bash
+# You have go-signal-agent cloned somewhere
+cd ~/my-new-go-project
+
+# Install from existing clone
+~/GitHub/go-signal-agent/.claude/agents/go-dev-portable/install.sh
+
+# Verify
+cat .claude/agents/go-dev/VERSION  # Should show 1.0.0
+```
+
+### Scenario 2: New Machine (Fresh Install)
+
+```bash
+# Step 1: Clone the repo
+git clone https://github.com/taipm/go-signal-agent.git ~/tools/go-signal-agent
+
+# Step 2: Install globally (recommended for new machine)
+~/tools/go-signal-agent/.claude/agents/go-dev-portable/install.sh --global
+
+# Step 3: Verify installation
+cat ~/.claude/agents/go-dev/VERSION
+ls ~/.claude/agents/go-dev/knowledge/
+
+# Now /go-dev works in ANY project on this machine
+```
+
+### Scenario 3: Team Sharing (Multiple Developers)
+
+```bash
+# Option A: Each developer clones and installs globally
+git clone https://github.com/taipm/go-signal-agent.git
+./go-signal-agent/.claude/agents/go-dev-portable/install.sh --global
+
+# Option B: Include in project (version controlled)
+cd your-team-project
+cp -r /path/to/go-dev-portable .claude/agents/go-dev-portable/
+git add .claude/agents/go-dev-portable/
+git commit -m "Add go-dev-agent for team"
+
+# Each team member runs:
+./.claude/agents/go-dev-portable/install.sh
+```
+
+### Scenario 4: CI/CD Pipeline
+
+```yaml
+# .github/workflows/setup.yml
+- name: Setup go-dev-agent
+  run: |
+    git clone --depth 1 https://github.com/taipm/go-signal-agent.git /tmp/agent
+    /tmp/agent/.claude/agents/go-dev-portable/install.sh
+```
+
+### Scenario 5: Offline Installation (Air-gapped Machine)
+
+```bash
+# On machine with internet
+cd /path/to/go-signal-agent/.claude/agents/go-dev-portable
+tar -czvf go-dev-portable.tar.gz .
+
+# Transfer go-dev-portable.tar.gz to offline machine (USB, etc.)
+
+# On offline machine
+mkdir -p ~/go-dev-portable
+tar -xzvf go-dev-portable.tar.gz -C ~/go-dev-portable/
+cd /your/project
+~/go-dev-portable/install.sh
 ```
 
 ## Usage
@@ -144,11 +220,28 @@ Approved learnings are added to:
 When moving to a new machine, copy your learnings:
 
 ```bash
-# On old machine
-cp -r .claude/agents/go-dev/knowledge/learning/archive ~/go-dev-learnings-backup
+# On old machine - Export all learnings
+tar -czvf go-dev-learnings.tar.gz \
+  .claude/agents/go-dev/knowledge/learning/archive/ \
+  .claude/agents/go-dev/knowledge/09-learned-patterns.md \
+  .claude/agents/go-dev/knowledge/10-learned-anti-patterns.md \
+  .claude/agents/go-dev/knowledge/11-project-decisions.md
 
-# On new machine (after install)
-cp -r ~/go-dev-learnings-backup/* .claude/agents/go-dev/knowledge/learning/archive/
+# Transfer to new machine, then:
+cd /your/new/project
+tar -xzvf go-dev-learnings.tar.gz
+```
+
+### Sync Learnings Across Projects
+
+```bash
+# If you have learnings in project A, copy to project B:
+cp .claude/agents/go-dev/knowledge/10-learned-anti-patterns.md \
+   /path/to/project-b/.claude/agents/go-dev/knowledge/
+
+# Or sync all learning files:
+rsync -av .claude/agents/go-dev/knowledge/learning/archive/ \
+   /path/to/project-b/.claude/agents/go-dev/knowledge/learning/archive/
 ```
 
 ## Requirements
