@@ -1,0 +1,269 @@
+# Go Team Kanban Board - Test State
+# Simulated state after running "Hello World API" session
+# Location: .claude/agents/microai/teams/go-team/kanban/test-board-state.yaml
+
+board:
+  name: "Go Team Development Pipeline"
+  type: "go-team"
+  created_at: "2025-12-29T00:00:00+07:00"
+  last_updated: "2025-12-29T01:35:00+07:00"
+  version: 1
+  session_id: "sim-20251229-001"
+
+columns:
+  backlog:
+    name: "Backlog"
+    tasks: []
+
+  requirements:
+    name: "Requirements"
+    step: "step-02"
+    agent: "pm-agent"
+    wip_limit: 1
+    tasks: []
+
+  architecture:
+    name: "Architecture"
+    step: "step-03"
+    agent: "architect-agent"
+    wip_limit: 1
+    tasks: []
+
+  development:
+    name: "Development"
+    step: "step-04"
+    agent: "go-coder-agent"
+    wip_limit: 3
+    tasks: []
+
+  testing:
+    name: "Testing"
+    step: "step-05"
+    agent: "test-agent"
+    wip_limit: 2
+    tasks: []
+
+  security:
+    name: "Security Gate"
+    step: "step-05b"
+    agent: "security-agent"
+    wip_limit: 1
+    is_gate: true
+    tasks: []
+
+  review:
+    name: "Review"
+    step: "step-06"
+    agent: "reviewer-agent"
+    wip_limit: 2
+    tasks: []
+
+  optimization:
+    name: "Optimization"
+    step: "step-07"
+    agent: "optimizer-agent"
+    wip_limit: 1
+    tasks: []
+
+  release:
+    name: "Release"
+    step: "step-08"
+    agent: "devops-agent"
+    wip_limit: 1
+    tasks: []
+
+  blocked:
+    name: "Blocked"
+    tasks: []
+
+  done:
+    name: "Done"
+    tasks:
+      - id: "task-sim-001"
+        title: "Hello World API"
+        description: "Simple REST API with greeting endpoint"
+        created_at: "2025-12-29T01:00:00+07:00"
+        started_at: "2025-12-29T01:00:00+07:00"
+        completed_at: "2025-12-29T01:35:00+07:00"
+        cycle_time_minutes: 35
+        priority: "medium"
+        labels: ["api", "demo", "test-session"]
+        history:
+          - action: "created"
+            timestamp: "2025-12-29T01:00:00+07:00"
+            column: "backlog"
+          - action: "moved"
+            timestamp: "2025-12-29T01:00:30+07:00"
+            from: "backlog"
+            to: "requirements"
+            agent: "pm-agent"
+          - action: "moved"
+            timestamp: "2025-12-29T01:03:30+07:00"
+            from: "requirements"
+            to: "architecture"
+            agent: "architect-agent"
+          - action: "moved"
+            timestamp: "2025-12-29T01:07:30+07:00"
+            from: "architecture"
+            to: "development"
+            agent: "go-coder-agent"
+          - action: "moved"
+            timestamp: "2025-12-29T01:15:30+07:00"
+            from: "development"
+            to: "testing"
+            agent: "test-agent"
+          - action: "moved"
+            timestamp: "2025-12-29T01:20:30+07:00"
+            from: "testing"
+            to: "security"
+            agent: "security-agent"
+          - action: "gate_passed"
+            timestamp: "2025-12-29T01:22:30+07:00"
+            gate: "security"
+            result: "PASSED"
+          - action: "moved"
+            timestamp: "2025-12-29T01:22:30+07:00"
+            from: "security"
+            to: "review"
+            agent: "reviewer-agent"
+          - action: "review_iteration"
+            timestamp: "2025-12-29T01:25:30+07:00"
+            iteration: 1
+            issues: 2
+          - action: "review_iteration"
+            timestamp: "2025-12-29T01:28:30+07:00"
+            iteration: 2
+            issues: 0
+            result: "PASSED"
+          - action: "moved"
+            timestamp: "2025-12-29T01:28:30+07:00"
+            from: "review"
+            to: "optimization"
+            agent: "optimizer-agent"
+          - action: "moved"
+            timestamp: "2025-12-29T01:31:30+07:00"
+            from: "optimization"
+            to: "release"
+            agent: "devops-agent"
+          - action: "completed"
+            timestamp: "2025-12-29T01:35:00+07:00"
+            from: "release"
+            to: "done"
+
+agents:
+  orchestrator-agent:
+    display_name: "Orchestrator"
+    icon: "🎭"
+    stats:
+      sessions_managed: 1
+      workflows_completed: 1
+
+  pm-agent:
+    display_name: "PM Agent"
+    icon: "📋"
+    stats:
+      specs_created: 1
+      total_time_seconds: 180
+      avg_time_seconds: 180
+
+  architect-agent:
+    display_name: "Architect Agent"
+    icon: "🏗️"
+    stats:
+      designs_created: 1
+      total_time_seconds: 240
+      avg_time_seconds: 240
+
+  go-coder-agent:
+    display_name: "Go Coder Agent"
+    icon: "💻"
+    stats:
+      tasks_completed: 1
+      files_created: 3
+      total_time_seconds: 480
+      avg_time_seconds: 480
+
+  test-agent:
+    display_name: "Test Agent"
+    icon: "🧪"
+    stats:
+      tests_written: 2
+      coverage_avg: 85
+      total_time_seconds: 300
+      avg_time_seconds: 300
+
+  security-agent:
+    display_name: "Security Agent"
+    icon: "🔒"
+    stats:
+      scans_completed: 1
+      gates_passed: 1
+      gates_blocked: 0
+      total_time_seconds: 120
+      avg_time_seconds: 120
+
+  reviewer-agent:
+    display_name: "Reviewer Agent"
+    icon: "👁️"
+    stats:
+      reviews_completed: 1
+      issues_found: 2
+      iterations_total: 2
+      total_time_seconds: 360
+      avg_time_seconds: 360
+
+  optimizer-agent:
+    display_name: "Optimizer Agent"
+    icon: "⚡"
+    stats:
+      optimizations_applied: 1
+      total_time_seconds: 180
+      avg_time_seconds: 180
+
+  devops-agent:
+    display_name: "DevOps Agent"
+    icon: "🚀"
+    stats:
+      releases_created: 1
+      artifacts_created: 3
+      total_time_seconds: 240
+      avg_time_seconds: 240
+
+workflow:
+  current_step: null
+  current_agent: null
+  session_active: false
+  last_session:
+    id: "sim-20251229-001"
+    topic: "Hello World API"
+    result: "SUCCESS"
+
+metrics:
+  total_sessions: 1
+  sessions_completed: 1
+  sessions_aborted: 0
+  avg_session_duration_minutes: 35
+  total_tasks_processed: 1
+  current_wip: 0
+  blocked_count: 0
+  security_blocks: 0
+  security_passes: 1
+  review_iterations_total: 2
+  review_iterations_avg: 2.0
+
+signals:
+  pending: []
+  processed_count: 18
+  last_signal:
+    type: "session_completed"
+    timestamp: "2025-12-29T01:35:00+07:00"
+
+history:
+  - timestamp: "2025-12-29T01:00:00+07:00"
+    action: "session_started"
+    session_id: "sim-20251229-001"
+    details: "Hello World API - full_pipeline"
+  - timestamp: "2025-12-29T01:35:00+07:00"
+    action: "session_completed"
+    session_id: "sim-20251229-001"
+    details: "SUCCESS - 35 minutes - 9 steps - 85% coverage"

@@ -1,12 +1,17 @@
 ---
 name: devops-agent
 description: DevOps/Release Agent - Dockerfile, CI, build flags, versioning, release
-model: sonnet
+model: opus
 tools:
   - Read
   - Write
   - Bash
 language: vi
+knowledge:
+  shared:
+    - ../knowledge/shared/01-go-fundamentals.md
+  specific:
+    - ../knowledge/devops/01-docker-cicd.md
 ---
 
 # DevOps Agent - Go Build & Release Specialist

@@ -1,13 +1,19 @@
 ---
 name: test-agent
 description: Test Agent - Sinh unit test / integration test, table-driven, mock interface
-model: sonnet
+model: opus
 tools:
   - Read
   - Write
   - Edit
   - Bash
 language: vi
+knowledge:
+  shared:
+    - ../knowledge/shared/01-go-fundamentals.md
+    - ../knowledge/shared/04-testing-patterns.md
+  specific:
+    - ../knowledge/test/01-test-strategies.md
 ---
 
 # Test Agent - Go Testing Specialist

@@ -1,10 +1,15 @@
 ---
 name: pm-agent
 description: Product/Requirement Agent - Hiểu yêu cầu, viết user story, acceptance criteria
-model: sonnet
+model: opus
 tools:
   - Read
 language: vi
+knowledge:
+  shared:
+    - ../knowledge/shared/01-go-fundamentals.md
+  specific:
+    - ../knowledge/pm/01-user-stories.md
 ---
 
 # PM Agent - Product/Requirements Specialist

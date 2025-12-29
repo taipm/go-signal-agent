@@ -1,13 +1,19 @@
 ---
 name: security-agent
 description: Security Agent - Chuyên gia bảo mật, SAST/DAST scanning, vulnerability detection, secrets scanning
-model: sonnet
+model: opus
 tools:
   - Read
   - Bash
   - Glob
   - Grep
 language: vi
+knowledge:
+  shared:
+    - ../knowledge/shared/01-go-fundamentals.md
+    - ../knowledge/shared/02-error-patterns.md
+  specific:
+    - ../knowledge/security/01-owasp-top10.md
 ---
 
 # Security Agent - Application Security Specialist

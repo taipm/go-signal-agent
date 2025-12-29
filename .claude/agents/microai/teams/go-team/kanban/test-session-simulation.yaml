@@ -1,0 +1,333 @@
+# Go Team Session Simulation
+# This file demonstrates a complete session flow with kanban integration
+
+session:
+  id: "sim-20251229-001"
+  topic: "Hello World API"
+  type: "new_feature"
+  workflow: "full_pipeline"
+  started_at: "2025-12-29T01:00:00+07:00"
+
+simulation_steps:
+
+  # Step 1: Session Start
+  - step: 1
+    name: "Session Initialization"
+    signal:
+      type: session_started
+      payload:
+        session_id: "sim-20251229-001"
+        topic: "Hello World API"
+        workflow: "full_pipeline"
+    kanban_action:
+      action: "create_session_task"
+      task:
+        id: "task-sim-001"
+        title: "Hello World API"
+        column: "backlog"
+    expected_board: |
+      BACKLOG: [task-sim-001: Hello World API]
+      REQ: []
+      ARCH: []
+      DEV: []
+      ...
+
+  # Step 2: Requirements
+  - step: 2
+    name: "Requirements Gathering"
+    agent: "pm-agent"
+    signal_start:
+      type: step_started
+      payload:
+        step: "step-02"
+        agent: "pm-agent"
+    kanban_action:
+      action: "move_task"
+      task_id: "task-sim-001"
+      from: "backlog"
+      to: "requirements"
+      agent: "pm-agent"
+    signal_complete:
+      type: step_completed
+      payload:
+        step: "step-02"
+        duration_seconds: 180
+        outputs: ["spec.md"]
+    expected_board: |
+      BACKLOG: []
+      REQ: [task-sim-001 ✓]
+      ARCH: []
+      ...
+
+  # Step 3: Architecture
+  - step: 3
+    name: "Architecture Design"
+    agent: "architect-agent"
+    signal_start:
+      type: step_started
+      payload:
+        step: "step-03"
+        agent: "architect-agent"
+    kanban_action:
+      action: "move_task"
+      task_id: "task-sim-001"
+      from: "requirements"
+      to: "architecture"
+      agent: "architect-agent"
+    signal_complete:
+      type: step_completed
+      payload:
+        step: "step-03"
+        duration_seconds: 240
+        outputs: ["architecture.md"]
+    expected_board: |
+      REQ: []
+      ARCH: [task-sim-001 ✓]
+      DEV: []
+      ...
+
+  # Step 4: Implementation
+  - step: 4
+    name: "Code Implementation"
+    agent: "go-coder-agent"
+    signal_start:
+      type: step_started
+      payload:
+        step: "step-04"
+        agent: "go-coder-agent"
+    kanban_action:
+      action: "move_task"
+      task_id: "task-sim-001"
+      from: "architecture"
+      to: "development"
+      agent: "go-coder-agent"
+    wip_check:
+      agent: "go-coder-agent"
+      current: 1
+      limit: 3
+      status: "OK"
+    signal_complete:
+      type: step_completed
+      payload:
+        step: "step-04"
+        duration_seconds: 480
+        outputs: ["main.go", "handler.go", "service.go"]
+
+  # Step 5: Testing
+  - step: 5
+    name: "Test Creation"
+    agent: "test-agent"
+    signal_start:
+      type: step_started
+      payload:
+        step: "step-05"
+        agent: "test-agent"
+    kanban_action:
+      action: "move_task"
+      task_id: "task-sim-001"
+      from: "development"
+      to: "testing"
+      agent: "test-agent"
+    signal_complete:
+      type: step_completed
+      payload:
+        step: "step-05"
+        duration_seconds: 300
+        outputs: ["main_test.go", "handler_test.go"]
+        metrics:
+          coverage: 85
+
+  # Step 5b: Security
+  - step: "5b"
+    name: "Security Gate"
+    agent: "security-agent"
+    signal_start:
+      type: step_started
+      payload:
+        step: "step-05b"
+        agent: "security-agent"
+    kanban_action:
+      action: "move_task"
+      task_id: "task-sim-001"
+      from: "testing"
+      to: "security"
+      agent: "security-agent"
+      is_gate: true
+    signal_gate:
+      type: security_gate
+      payload:
+        result: "PASSED"
+        severity: null
+        issues_count: 0
+    signal_complete:
+      type: step_completed
+      payload:
+        step: "step-05b"
+        duration_seconds: 120
+        outputs: ["security-report.md"]
+
+  # Step 6: Review
+  - step: 6
+    name: "Code Review"
+    agent: "reviewer-agent"
+    signal_start:
+      type: step_started
+      payload:
+        step: "step-06"
+        agent: "reviewer-agent"
+    kanban_action:
+      action: "move_task"
+      task_id: "task-sim-001"
+      from: "security"
+      to: "review"
+      agent: "reviewer-agent"
+    review_iterations:
+      - iteration: 1
+        issues_found: 2
+        fixed: true
+      - iteration: 2
+        issues_found: 0
+        status: "PASSED"
+    signal_complete:
+      type: step_completed
+      payload:
+        step: "step-06"
+        duration_seconds: 360
+        outputs: ["review-report.md"]
+        metrics:
+          iterations: 2
+
+  # Step 7: Optimization
+  - step: 7
+    name: "Performance Optimization"
+    agent: "optimizer-agent"
+    signal_start:
+      type: step_started
+      payload:
+        step: "step-07"
+        agent: "optimizer-agent"
+    kanban_action:
+      action: "move_task"
+      task_id: "task-sim-001"
+      from: "review"
+      to: "optimization"
+      agent: "optimizer-agent"
+    signal_complete:
+      type: step_completed
+      payload:
+        step: "step-07"
+        duration_seconds: 180
+        outputs: ["benchmark-report.md"]
+        metrics:
+          improvement: "15%"
+
+  # Step 8: Release
+  - step: 8
+    name: "Release Configuration"
+    agent: "devops-agent"
+    signal_start:
+      type: step_started
+      payload:
+        step: "step-08"
+        agent: "devops-agent"
+    kanban_action:
+      action: "move_task"
+      task_id: "task-sim-001"
+      from: "optimization"
+      to: "release"
+      agent: "devops-agent"
+    signal_complete:
+      type: step_completed
+      payload:
+        step: "step-08"
+        duration_seconds: 240
+        outputs: ["Dockerfile", "ci.yml", "Makefile"]
+
+  # Step 9: Synthesis
+  - step: 9
+    name: "Final Synthesis"
+    signal_start:
+      type: step_started
+      payload:
+        step: "step-09"
+        agent: "orchestrator"
+    kanban_action:
+      action: "move_task"
+      task_id: "task-sim-001"
+      from: "release"
+      to: "done"
+      completed: true
+    signal_complete:
+      type: session_completed
+      payload:
+        result: "SUCCESS"
+        duration_seconds: 2100  # 35 minutes
+        metrics:
+          coverage: 85
+          security_passed: true
+          files_created: 12
+          review_iterations: 2
+
+# Final Board State
+final_board:
+  backlog: []
+  requirements: []
+  architecture: []
+  development: []
+  testing: []
+  security: []
+  review: []
+  optimization: []
+  release: []
+  blocked: []
+  done:
+    - id: "task-sim-001"
+      title: "Hello World API"
+      completed_at: "2025-12-29T01:35:00+07:00"
+      cycle_time_minutes: 35
+      agents_involved:
+        - pm-agent
+        - architect-agent
+        - go-coder-agent
+        - test-agent
+        - security-agent
+        - reviewer-agent
+        - optimizer-agent
+        - devops-agent
+
+# Session Metrics
+session_metrics:
+  duration_minutes: 35
+  steps_completed: 9
+  review_iterations: 2
+  coverage: 85
+  security_status: "PASSED"
+  files_created: 12
+  agents_used: 8
+
+  per_agent:
+    pm-agent:
+      time_seconds: 180
+      outputs: 1
+    architect-agent:
+      time_seconds: 240
+      outputs: 1
+    go-coder-agent:
+      time_seconds: 480
+      outputs: 3
+    test-agent:
+      time_seconds: 300
+      outputs: 2
+    security-agent:
+      time_seconds: 120
+      outputs: 1
+    reviewer-agent:
+      time_seconds: 360
+      outputs: 1
+      iterations: 2
+    optimizer-agent:
+      time_seconds: 180
+      outputs: 1
+    devops-agent:
+      time_seconds: 240
+      outputs: 3

@@ -1,0 +1,305 @@
+# Go Team Configuration
+# Location: .claude/agents/microai/teams/go-team/config/config.yaml
+#
+# This file contains all configurable parameters for go-team workflow.
+# Parameters can be modified at runtime using *config commands.
+
+version: "1.0"
+last_updated: "2025-12-29T01:30:00+07:00"
+
+# =============================================================================
+# WORKFLOW CONFIGURATION
+# =============================================================================
+workflow:
+  # Default workflow type: full_pipeline | quick_fix | security_only | test_only
+  default_type: "full_pipeline"
+
+  # Enable/disable specific steps
+  steps:
+    codebase_analysis: true      # Step 01b - auto if existing code
+    requirements: true            # Step 02
+    architecture: true            # Step 03
+    implementation: true          # Step 04
+    testing: true                 # Step 05
+    security_scan: true           # Step 05b
+    review_loop: true             # Step 06
+    optimization: true            # Step 07
+    release: true                 # Step 08
+
+  # Breakpoint settings
+  breakpoints:
+    requirements: true            # Pause after PM creates spec
+    architecture: true            # Pause after Architect designs
+    security_gate: true           # Pause on MEDIUM/LOW findings
+    review_final: true            # Pause after review loop completes
+
+# =============================================================================
+# ITERATION & LOOP CONFIGURATION
+# =============================================================================
+iterations:
+  # Review loop iterations
+  review:
+    default: 3                    # Default max iterations
+    min: 1                        # Minimum allowed
+    max: 10                       # Maximum allowed
+    extend_on_request: true       # Allow *iterations:+N to extend
+
+  # Fix loop within review
+  fix:
+    max_attempts: 5               # Max fix attempts per issue
+    escalate_after: 2             # Escalate to Coder after N fails
+
+# =============================================================================
+# QUALITY THRESHOLDS
+# =============================================================================
+quality:
+  # Test coverage
+  coverage:
+    default: 80                   # Default coverage threshold (%)
+    min: 50                       # Minimum allowed
+    max: 100                      # Maximum allowed
+    warn_below: 70                # Warn if below this
+
+  # Lint settings
+  lint:
+    required: true                # Require lint pass
+    tool: "golangci-lint"         # Default lint tool
+    strict: false                 # Strict mode (all warnings as errors)
+
+  # Race detection
+  race:
+    enabled: true                 # Enable race detection
+    required: true                # Require race-free code
+
+  # Build settings
+  build:
+    required: true                # Require successful build
+    flags: "-v"                   # Default build flags
+
+# =============================================================================
+# SECURITY CONFIGURATION
+# =============================================================================
+security:
+  # Gate behavior
+  gate:
+    block_on_critical: true       # Always block on CRITICAL
+    block_on_high: true           # Always block on HIGH
+    warn_on_medium: true          # Warn but allow continue
+    warn_on_low: true             # Warn but allow continue
+
+  # Tools
+  tools:
+    gosec: true                   # Enable gosec
+    govulncheck: true             # Enable govulncheck
+    staticcheck: true             # Enable staticcheck
+
+  # Secrets scanning
+  secrets:
+    enabled: true                 # Scan for hardcoded secrets
+    patterns:
+      - "password"
+      - "secret"
+      - "api_key"
+      - "token"
+      - "credential"
+
+# =============================================================================
+# AGENT CONFIGURATION
+# =============================================================================
+agents:
+  # Model assignments
+  models:
+    orchestrator: "opus"
+    pm: "sonnet"
+    architect: "sonnet"
+    coder: "sonnet"
+    test: "sonnet"
+    security: "opus"
+    reviewer: "sonnet"
+    fixer: "sonnet"
+    optimizer: "sonnet"
+    devops: "sonnet"
+
+  # Timeout per agent (seconds)
+  timeouts:
+    default: 300                  # 5 minutes default
+    coder: 600                    # 10 minutes for coder
+    security: 180                 # 3 minutes for security
+    reviewer: 240                 # 4 minutes for reviewer
+
+  # Fixer agent thresholds
+  fixer:
+    max_lines: 20                 # Max lines for fixer (else escalate)
+    complexity_threshold: 3       # Max cyclomatic complexity for fixes
+
+# =============================================================================
+# KANBAN INTEGRATION
+# =============================================================================
+kanban:
+  enabled: true                   # Enable kanban integration
+
+  # Signal emission
+  signals:
+    emit_step_start: true         # Emit on step start
+    emit_step_complete: true      # Emit on step complete
+    emit_agent_activate: true     # Emit on agent activation
+    emit_security_gate: true      # Emit security gate results
+    emit_review_iteration: true   # Emit each review iteration
+
+  # WIP limits
+  wip_limits:
+    requirements: 1
+    architecture: 1
+    development: 3
+    testing: 2
+    security: 1
+    review: 2
+    optimization: 1
+    release: 1
+
+  # Enforce WIP limits
+  enforce_wip: true               # Block if WIP exceeded
+
+# =============================================================================
+# CHECKPOINT CONFIGURATION
+# =============================================================================
+checkpoint:
+  enabled: true                   # Enable checkpoint system
+
+  # Auto-save frequency
+  auto_save:
+    enabled: true
+    interval_seconds: 30          # Auto-save every 30s
+
+  # Git integration
+  git:
+    enabled: true                 # Enable git commits per checkpoint
+    branch_prefix: "go-team"      # Branch naming prefix
+    commit_on_checkpoint: true    # Commit at each checkpoint
+
+  # Rollback settings
+  rollback:
+    max_history: 10               # Keep last N rollbacks in history
+    confirm_required: true        # Require confirmation for rollback
+
+# =============================================================================
+# METRICS & MONITORING
+# =============================================================================
+metrics:
+  enabled: true                   # Enable metrics collection
+
+  # Token tracking
+  tokens:
+    track: true                   # Track token usage
+    warn_threshold: 50000         # Warn if session exceeds tokens
+    budget: 100000                # Max token budget per session
+
+  # Cost calculation (per 1K tokens)
+  costs:
+    opus_input: 0.015
+    opus_output: 0.075
+    sonnet_input: 0.003
+    sonnet_output: 0.015
+    haiku_input: 0.00025
+    haiku_output: 0.00125
+
+  # Performance tracking
+  performance:
+    track_duration: true          # Track step durations
+    track_agent_time: true        # Track time per agent
+    track_file_changes: true      # Track file modifications
+
+# =============================================================================
+# PARALLEL EXECUTION (Experimental)
+# =============================================================================
+parallel:
+  enabled: false                  # Disabled by default
+
+  # Parallelizable groups
+  groups:
+    quality_assurance:
+      - "testing"
+      - "security"
+    code_generation:
+      - "models"
+      - "interfaces"
+      - "repos"
+
+  # Worker pool
+  max_workers: 3                  # Max parallel workers
+
+# =============================================================================
+# AUTONOMOUS MODE (Experimental)
+# =============================================================================
+autonomous:
+  enabled: false                  # Disabled by default
+
+  # Mode: cautious | balanced | aggressive
+  mode: "balanced"
+
+  # Auto-approval rules
+  auto_approve:
+    specs: false                  # Auto-approve if clarity >= 0.8
+    architecture: false           # Auto-approve if follows patterns
+    code: false                   # Auto-approve if tests pass
+    security_low: true            # Auto-approve LOW findings
+    security_medium: false        # Require review for MEDIUM
+    security_high: false          # Never auto-approve HIGH
+    security_critical: false      # Never auto-approve CRITICAL
+
+# =============================================================================
+# OUTPUT CONFIGURATION
+# =============================================================================
+output:
+  # Session reports
+  reports:
+    enabled: true
+    directory: "./docs/go-team"
+    format: "markdown"            # markdown | json | html
+
+  # Logging
+  logging:
+    level: "info"                 # debug | info | warn | error
+    include_timestamps: true
+    include_agent: true
+
+  # Console display
+  display:
+    show_progress: true           # Show progress bar
+    show_board: true              # Show kanban board
+    show_metrics: true            # Show metrics summary
+    color_enabled: true           # Enable color output
+
+# =============================================================================
+# COMMANDS REFERENCE
+# =============================================================================
+# Available runtime commands:
+#
+# Configuration:
+#   *config                       - Show current configuration
+#   *config:key                   - Show specific config value
+#   *config:key=value             - Set config value
+#   *config:reset                 - Reset to defaults
+#   *config:save                  - Save current config
+#
+# Iterations:
+#   *iterations                   - Show current iteration limit
+#   *iterations:N                 - Set to N iterations (1-10)
+#   *iterations:+N                - Add N more iterations
+#   *iterations:reset             - Reset to default (3)
+#
+# Coverage:
+#   *coverage                     - Show coverage threshold
+#   *coverage:N                   - Set to N% (50-100)
+#   *coverage:reset               - Reset to default (80%)
+#
+# Metrics:
+#   *tokens                       - Show token usage
+#   *cost                         - Show cost estimate
+#   *budget                       - Show remaining budget
+#   *metrics                      - Show all metrics
+#
+# Board:
+#   *board                        - Show kanban board
+#   *board:full                   - Show full board
+#   *wip                          - Show WIP status

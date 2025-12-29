@@ -1,14 +1,16 @@
-# Go Team Checkpoint System
+# Go Team Checkpoint & Session System
 
-**Version:** 1.0.0
+**Version:** 1.1.0
 
-Checkpoint/Rollback mechanism cho Go Team workflow, cho phép khôi phục về trạng thái trước đó khi có lỗi hoặc cần thay đổi hướng đi.
+Checkpoint/Rollback và Session Auto-Resume mechanism cho Go Team workflow, cho phép:
+- Khôi phục về trạng thái trước đó (rollback)
+- Tự động resume session sau khi bị gián đoạn (crash, timeout, disconnect)
 
 ---
 
 ## Quick Start
 
-### Observer Commands
+### Checkpoint Commands
 
 | Command | Mô tả |
 |---------|-------|
@@ -18,6 +20,18 @@ Checkpoint/Rollback mechanism cho Go Team workflow, cho phép khôi phục về 
 | `*rollback:{N}` | Rollback về step N |
 | `*cp-validate` | Kiểm tra tính toàn vẹn của checkpoints |
 | `*cp-export` | Export checkpoints thành archive |
+
+### Session Management Commands
+
+| Command | Mô tả |
+|---------|-------|
+| `*sessions` | Liệt kê tất cả sessions |
+| `*resume` | Resume session gần nhất bị gián đoạn |
+| `*resume:{id}` | Resume session cụ thể |
+| `*session-info` | Xem thông tin session hiện tại |
+| `*session-info:{id}` | Xem thông tin session cụ thể |
+| `*abandon:{id}` | Đánh dấu session không thể resume |
+| `*cleanup` | Dọn dẹp sessions cũ/đã hoàn thành |
 
 ### Ví Dụ
 

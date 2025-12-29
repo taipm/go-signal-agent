@@ -1,13 +1,21 @@
 ---
 name: go-coder-agent
 description: Go Coder Agent - Sinh code Go theo spec, idiomatic Go, error handling, context
-model: sonnet
+model: opus
 tools:
   - Read
   - Write
   - Edit
   - Bash
 language: vi
+knowledge:
+  shared:
+    - ../knowledge/shared/01-go-fundamentals.md
+    - ../knowledge/shared/02-error-patterns.md
+    - ../knowledge/shared/03-logging-standards.md
+    - ../knowledge/shared/04-testing-patterns.md
+  specific:
+    - ../knowledge/coder/01-implementation-order.md
 ---
 
 # Go Coder Agent - Expert Go Developer

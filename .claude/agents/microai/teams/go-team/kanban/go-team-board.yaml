@@ -1,0 +1,225 @@
+# Go Team Kanban Board
+# Integrated with go-team workflow for real-time task tracking
+# Location: .claude/agents/microai/teams/go-team/kanban/go-team-board.yaml
+
+board:
+  name: "Go Team Development Pipeline"
+  type: "go-team"
+  created_at: "2025-12-29T00:00:00+07:00"
+  last_updated: "2025-12-29T00:00:00+07:00"
+  version: 1
+  session_id: null  # Set when session starts
+
+# Go-Team specific columns matching workflow steps
+columns:
+  backlog:
+    name: "Backlog"
+    description: "Requests waiting to be processed"
+    step: null
+    order: 1
+    tasks: []
+
+  requirements:
+    name: "Requirements"
+    description: "PM Agent gathering specifications"
+    step: "step-02"
+    agent: "pm-agent"
+    order: 2
+    wip_limit: 1
+    tasks: []
+
+  architecture:
+    name: "Architecture"
+    description: "Architect Agent designing system"
+    step: "step-03"
+    agent: "architect-agent"
+    order: 3
+    wip_limit: 1
+    tasks: []
+
+  development:
+    name: "Development"
+    description: "Go Coder Agent implementing code"
+    step: "step-04"
+    agent: "go-coder-agent"
+    order: 4
+    wip_limit: 3
+    tasks: []
+
+  testing:
+    name: "Testing"
+    description: "Test Agent writing tests"
+    step: "step-05"
+    agent: "test-agent"
+    order: 5
+    wip_limit: 2
+    tasks: []
+
+  security:
+    name: "Security Gate"
+    description: "Security Agent scanning for vulnerabilities"
+    step: "step-05b"
+    agent: "security-agent"
+    order: 6
+    wip_limit: 1
+    is_gate: true
+    tasks: []
+
+  review:
+    name: "Review"
+    description: "Reviewer Agent reviewing code quality"
+    step: "step-06"
+    agent: "reviewer-agent"
+    order: 7
+    wip_limit: 2
+    tasks: []
+
+  optimization:
+    name: "Optimization"
+    description: "Optimizer Agent improving performance"
+    step: "step-07"
+    agent: "optimizer-agent"
+    order: 8
+    wip_limit: 1
+    tasks: []
+
+  release:
+    name: "Release"
+    description: "DevOps Agent preparing deployment"
+    step: "step-08"
+    agent: "devops-agent"
+    order: 9
+    wip_limit: 1
+    tasks: []
+
+  blocked:
+    name: "Blocked"
+    description: "Tasks blocked by issues or dependencies"
+    order: 10
+    tasks: []
+
+  done:
+    name: "Done"
+    description: "Completed tasks"
+    order: 11
+    tasks: []
+
+# Agent registry for go-team
+agents:
+  orchestrator-agent:
+    display_name: "Orchestrator"
+    icon: "🎭"
+    role: "coordinator"
+    active_tasks: []
+    stats:
+      sessions_managed: 0
+      workflows_completed: 0
+
+  pm-agent:
+    display_name: "PM Agent"
+    icon: "📋"
+    role: "requirements"
+    active_tasks: []
+    stats:
+      specs_created: 0
+      avg_time_minutes: 0
+
+  architect-agent:
+    display_name: "Architect Agent"
+    icon: "🏗️"
+    role: "design"
+    active_tasks: []
+    stats:
+      designs_created: 0
+      avg_time_minutes: 0
+
+  go-coder-agent:
+    display_name: "Go Coder Agent"
+    icon: "💻"
+    role: "implementation"
+    active_tasks: []
+    stats:
+      files_created: 0
+      lines_written: 0
+      avg_time_minutes: 0
+
+  test-agent:
+    display_name: "Test Agent"
+    icon: "🧪"
+    role: "testing"
+    active_tasks: []
+    stats:
+      tests_written: 0
+      coverage_avg: 0
+      avg_time_minutes: 0
+
+  security-agent:
+    display_name: "Security Agent"
+    icon: "🔒"
+    role: "security"
+    active_tasks: []
+    stats:
+      scans_completed: 0
+      vulns_found: 0
+      vulns_critical: 0
+      avg_time_minutes: 0
+
+  reviewer-agent:
+    display_name: "Reviewer Agent"
+    icon: "👁️"
+    role: "review"
+    active_tasks: []
+    stats:
+      reviews_completed: 0
+      issues_found: 0
+      avg_time_minutes: 0
+
+  optimizer-agent:
+    display_name: "Optimizer Agent"
+    icon: "⚡"
+    role: "performance"
+    active_tasks: []
+    stats:
+      optimizations_applied: 0
+      perf_improvement_avg: 0
+      avg_time_minutes: 0
+
+  devops-agent:
+    display_name: "DevOps Agent"
+    icon: "🚀"
+    role: "release"
+    active_tasks: []
+    stats:
+      releases_created: 0
+      docker_images: 0
+      avg_time_minutes: 0
+
+# Workflow tracking
+workflow:
+  current_step: null
+  current_agent: null
+  iteration: 0
+  max_iterations: 3
+  started_at: null
+  breakpoints_hit: []
+
+# Session metrics
+metrics:
+  total_sessions: 0
+  sessions_completed: 0
+  sessions_aborted: 0
+  avg_session_duration_minutes: 0
+  total_tasks_processed: 0
+  current_wip: 0
+  blocked_count: 0
+  security_blocks: 0
+  review_iterations_avg: 0
+
+# Signal queue for inter-agent communication
+signals:
+  pending: []
+  processed_count: 0
+  last_signal: null
+
+# Session history
+history: []

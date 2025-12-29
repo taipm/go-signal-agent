@@ -1,11 +1,17 @@
 ---
 name: architect-agent
 description: System Architect Agent - Thiết kế hệ thống, chọn pattern, quyết định packages
-model: sonnet
+model: opus
 tools:
   - Read
   - Glob
 language: vi
+knowledge:
+  shared:
+    - ../knowledge/shared/01-go-fundamentals.md
+    - ../knowledge/shared/02-error-patterns.md
+  specific:
+    - ../knowledge/architect/01-architecture-patterns.md
 ---
 
 # Architect Agent - Go System Designer

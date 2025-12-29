@@ -1,0 +1,309 @@
+# Go Team Agent Registry
+# Auto-generated and maintained by orchestrator
+# Location: .claude/agents/microai/teams/go-team/agent-registry.yaml
+
+version: "1.0.0"
+last_updated: "2025-12-29T02:00:00+07:00"
+auto_discover: true
+
+# Agent Categories
+categories:
+  core:
+    description: "Core orchestration agents"
+    agents: [orchestrator]
+
+  pipeline:
+    description: "Development pipeline agents"
+    agents: [pm, architect, coder, test, security, reviewer, fixer, optimizer, devops, doc]
+
+  support:
+    description: "Support and utility agents"
+    agents: [kanban]
+
+# Registered Agents
+agents:
+  # ═══════════════════════════════════════════════════════════════
+  # CORE AGENTS
+  # ═══════════════════════════════════════════════════════════════
+
+  orchestrator:
+    name: "orchestrator-agent"
+    display_name: "Orchestrator"
+    description: "Điều phối workflow, cầu nối user và go-team"
+    category: "core"
+    model: "opus"
+    path: ".claude/agents/microai/teams/go-team/agents/orchestrator-agent.md"
+    tools: [Read, Write, Bash, Glob, Task, TodoWrite]
+    capabilities:
+      - request_analysis
+      - workflow_selection
+      - agent_coordination
+      - progress_monitoring
+      - user_communication
+    invocation:
+      skill: "go-team"
+      direct: false
+
+  # ═══════════════════════════════════════════════════════════════
+  # PIPELINE AGENTS
+  # ═══════════════════════════════════════════════════════════════
+
+  pm:
+    name: "pm-agent"
+    display_name: "PM Agent"
+    description: "Requirements gathering, user stories, acceptance criteria"
+    category: "pipeline"
+    model: "sonnet"
+    path: ".claude/agents/microai/teams/go-team/agents/pm-agent.md"
+    tools: [Read]
+    step: "step-02"
+    capabilities:
+      - requirements_gathering
+      - user_story_creation
+      - scope_definition
+    invocation:
+      via_orchestrator: true
+      direct: false
+
+  architect:
+    name: "architect-agent"
+    display_name: "Architect Agent"
+    description: "System design, patterns, package structure"
+    category: "pipeline"
+    model: "sonnet"
+    path: ".claude/agents/microai/teams/go-team/agents/architect-agent.md"
+    tools: [Read, Glob]
+    step: "step-03"
+    capabilities:
+      - system_design
+      - pattern_selection
+      - interface_design
+    invocation:
+      via_orchestrator: true
+      direct: false
+
+  coder:
+    name: "go-coder-agent"
+    display_name: "Go Coder Agent"
+    description: "Code implementation, idiomatic Go"
+    category: "pipeline"
+    model: "sonnet"
+    path: ".claude/agents/microai/teams/go-team/agents/go-coder-agent.md"
+    tools: [Read, Write, Edit, Bash]
+    step: "step-04"
+    capabilities:
+      - code_generation
+      - error_handling
+      - dependency_injection
+    invocation:
+      via_orchestrator: true
+      direct: false
+
+  test:
+    name: "test-agent"
+    display_name: "Test Agent"
+    description: "Unit tests, integration tests, table-driven patterns"
+    category: "pipeline"
+    model: "sonnet"
+    path: ".claude/agents/microai/teams/go-team/agents/test-agent.md"
+    tools: [Read, Write, Edit, Bash]
+    step: "step-05"
+    capabilities:
+      - unit_testing
+      - integration_testing
+      - coverage_analysis
+    invocation:
+      via_orchestrator: true
+      direct: false
+
+  security:
+    name: "security-agent"
+    display_name: "Security Agent"
+    description: "SAST/DAST scanning, vulnerability detection, OWASP"
+    category: "pipeline"
+    model: "opus"
+    path: ".claude/agents/microai/teams/go-team/agents/security-agent.md"
+    tools: [Read, Bash, Glob, Grep]
+    step: "step-05b"
+    is_gate: true
+    capabilities:
+      - vulnerability_scanning
+      - secrets_detection
+      - owasp_compliance
+    invocation:
+      via_orchestrator: true
+      direct: false
+
+  reviewer:
+    name: "reviewer-agent"
+    display_name: "Reviewer Agent"
+    description: "Code review, race conditions, style checking"
+    category: "pipeline"
+    model: "sonnet"
+    path: ".claude/agents/microai/teams/go-team/agents/reviewer-agent.md"
+    tools: [Read, Bash]
+    step: "step-06"
+    capabilities:
+      - code_review
+      - race_detection
+      - style_enforcement
+    invocation:
+      via_orchestrator: true
+      direct: false
+
+  fixer:
+    name: "fixer-agent"
+    display_name: "Fixer Agent"
+    description: "Quick Fix Specialist - handles small fixes from Reviewer/Security feedback"
+    category: "pipeline"
+    model: "sonnet"
+    path: ".claude/agents/microai/teams/go-team/agents/fixer-agent.md"
+    tools: [Read, Edit, Bash]
+    step: "step-06"
+    capabilities:
+      - lint_fixes
+      - security_fixes_low_medium
+      - concurrency_fixes
+      - error_handling_fixes
+      - small_refactoring
+    escalation:
+      threshold: 20  # lines changed
+      route_to: coder
+    invocation:
+      via_orchestrator: true
+      direct: false
+
+  optimizer:
+    name: "optimizer-agent"
+    display_name: "Optimizer Agent"
+    description: "Performance optimization, concurrency, benchmarks"
+    category: "pipeline"
+    model: "sonnet"
+    path: ".claude/agents/microai/teams/go-team/agents/optimizer-agent.md"
+    tools: [Read, Bash]
+    step: "step-07"
+    capabilities:
+      - performance_profiling
+      - memory_optimization
+      - benchmarking
+    invocation:
+      via_orchestrator: true
+      direct: false
+
+  devops:
+    name: "devops-agent"
+    display_name: "DevOps Agent"
+    description: "Dockerfile, CI/CD, release automation"
+    category: "pipeline"
+    model: "sonnet"
+    path: ".claude/agents/microai/teams/go-team/agents/devops-agent.md"
+    tools: [Read, Write, Bash]
+    step: "step-08"
+    capabilities:
+      - docker_configuration
+      - cicd_setup
+      - release_management
+    invocation:
+      via_orchestrator: true
+      direct: false
+
+  doc:
+    name: "doc-agent"
+    display_name: "Doc Agent"
+    description: "Documentation Specialist - README, API docs, godoc, CHANGELOG, ADRs"
+    category: "pipeline"
+    model: "sonnet"
+    path: ".claude/agents/microai/teams/go-team/agents/doc-agent.md"
+    tools: [Read, Write, Edit, Bash, Glob, Grep]
+    step: "step-08b"
+    capabilities:
+      - readme_generation
+      - api_documentation
+      - godoc_validation
+      - changelog_maintenance
+      - adr_creation
+    quality_gates:
+      min_coverage: 80
+      require_readme: true
+      require_examples: true
+    invocation:
+      via_orchestrator: true
+      direct: false
+
+  # ═══════════════════════════════════════════════════════════════
+  # SUPPORT AGENTS
+  # ═══════════════════════════════════════════════════════════════
+
+  kanban:
+    name: "kanban-agent"
+    display_name: "Kanban Agent"
+    description: "Task tracking, WIP limits, progress visualization"
+    category: "support"
+    model: "haiku"
+    path: ".claude/agents/microai/agents/kanban-agent.md"
+    tools: [Read, Write, Edit, Glob, Grep, Bash]
+    capabilities:
+      - task_tracking
+      - wip_enforcement
+      - metrics_collection
+      - board_visualization
+    invocation:
+      skill: "kanban"
+      direct: true
+      subagent_type: "kanban-agent"
+    commands:
+      show: "Display current board"
+      add: "Add task to backlog"
+      start: "Start a task"
+      done: "Mark task complete"
+      block: "Mark task blocked"
+      unblock: "Unblock task"
+      metrics: "Show metrics"
+      agent: "Show agent tasks"
+      archive: "Archive completed tasks"
+
+# Discovery Configuration
+discovery:
+  scan_paths:
+    - ".claude/agents/microai/teams/go-team/agents/*.md"
+    - ".claude/agents/microai/agents/*.md"
+
+  exclude_patterns:
+    - "*-template.md"
+    - "*-example.md"
+
+  refresh_triggers:
+    - session_start
+    - manual_refresh
+    - file_change
+
+# Integration Points
+integrations:
+  kanban:
+    enabled: true
+    board_path: ".claude/agents/microai/teams/go-team/kanban/go-team-board.yaml"
+    auto_update: true
+    signals:
+      - session_started
+      - step_started
+      - step_completed
+      - agent_activated
+      - security_gate
+      - session_completed
+
+  checkpoint:
+    enabled: true
+    storage_path: ".claude/agents/microai/teams/go-team/checkpoints"
+
+  communication:
+    enabled: true
+    bus_path: ".claude/agents/microai/teams/go-team/communication"
+
+# Statistics
+stats:
+  total_agents: 12
+  core_agents: 1
+  pipeline_agents: 10
+  support_agents: 1
+  gates: 1
+  last_discovery: "2025-12-29T09:00:00+07:00"

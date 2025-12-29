@@ -1,0 +1,131 @@
+{
+  "queue": {
+    "pending": [],
+    "processed": [
+      { "id": "sig-001", "type": "session_started" },
+      { "id": "sig-002", "type": "step_started" },
+      { "id": "sig-003", "type": "agent_activated" },
+      { "id": "sig-004", "type": "step_completed", "payload": { "step": "step-02", "agent": "pm-agent", "duration_seconds": 170 } },
+      { "id": "sig-005", "type": "step_started" },
+      { "id": "sig-006", "type": "agent_activated" },
+      { "id": "sig-007", "type": "step_completed", "payload": { "step": "step-03", "agent": "architect-agent", "duration_seconds": 200 } },
+      { "id": "sig-008", "type": "step_started" },
+      { "id": "sig-009", "type": "agent_activated" },
+      { "id": "sig-010", "type": "step_completed", "payload": { "step": "step-04", "agent": "go-coder-agent", "duration_seconds": 450 } },
+      { "id": "sig-011", "type": "step_started" },
+      { "id": "sig-012", "type": "step_completed", "payload": { "step": "step-05", "agent": "test-agent", "duration_seconds": 180 } },
+      { "id": "sig-012b", "type": "security_gate", "payload": { "result": "PASSED", "severity": "none", "vulnerabilities": 0 } },
+      { "id": "sig-013", "type": "step_started" },
+      { "id": "sig-014", "type": "agent_activated" },
+      { "id": "sig-015", "type": "step_completed", "payload": { "step": "step-06", "agent": "reviewer-agent", "duration_seconds": 120, "iterations": 1, "result": "APPROVED" } },
+      { "id": "sig-016", "type": "step_started" },
+      { "id": "sig-017", "type": "step_completed", "payload": { "step": "step-07", "agent": "optimizer-agent", "duration_seconds": 90 } },
+      { "id": "sig-018", "type": "step_started" },
+      { "id": "sig-019", "type": "step_completed", "payload": { "step": "step-08", "agent": "devops-agent", "duration_seconds": 80 } },
+      { "id": "sig-020", "type": "step_completed", "payload": { "step": "step-09", "agent": "orchestrator-agent", "duration_seconds": 30 } },
+      { "id": "sig-021", "type": "session_completed", "payload": { "result": "SUCCESS", "total_duration_seconds": 1555 } }
+    ]
+  },
+  "session": {
+    "id": "go-team-demo-jwt-001",
+    "topic": "JWT Authentication",
+    "started_at": "2025-12-29T02:45:00+07:00",
+    "ended_at": "2025-12-29T03:10:55+07:00",
+    "current_step": "completed",
+    "current_agent": null,
+    "result": "SUCCESS"
+  },
+  "board_state": {
+    "columns": {
+      "backlog": { "tasks": [], "wip": 0 },
+      "requirements": { "tasks": [], "wip": 0 },
+      "architecture": { "tasks": [], "wip": 0 },
+      "development": { "tasks": [], "wip": 0 },
+      "testing": { "tasks": [], "wip": 0 },
+      "security": { "tasks": [], "wip": 0 },
+      "review": { "tasks": [], "wip": 0 },
+      "optimization": { "tasks": [], "wip": 0 },
+      "release": { "tasks": [], "wip": 0 },
+      "blocked": { "tasks": [], "wip": 0 },
+      "done": {
+        "tasks": [
+          {
+            "id": "task-jwt-complete",
+            "title": "JWT Authentication",
+            "status": "SUCCESS",
+            "started_at": "2025-12-29T02:45:00+07:00",
+            "completed_at": "2025-12-29T03:10:55+07:00",
+            "total_duration_seconds": 1555,
+            "deliverables": [
+              "spec.md",
+              "architecture.md",
+              "jwt.go",
+              "middleware.go",
+              "claims.go",
+              "jwt_test.go",
+              "Dockerfile",
+              "README.md"
+            ],
+            "agents_involved": [
+              "orchestrator-agent",
+              "pm-agent",
+              "architect-agent",
+              "go-coder-agent",
+              "test-agent",
+              "security-agent",
+              "reviewer-agent",
+              "optimizer-agent",
+              "devops-agent"
+            ]
+          }
+        ],
+        "wip": 0
+      }
+    },
+    "progress_percent": 100,
+    "total_wip": 0
+  },
+  "metrics": {
+    "signals_emitted": 21,
+    "signals_processed": 21,
+    "steps_completed": 9,
+    "total_steps": 9,
+    "agents_activated": [
+      "orchestrator-agent",
+      "pm-agent",
+      "architect-agent",
+      "go-coder-agent",
+      "test-agent",
+      "security-agent",
+      "reviewer-agent",
+      "optimizer-agent",
+      "devops-agent"
+    ],
+    "durations": {
+      "step-01": 5,
+      "step-02": 170,
+      "step-03": 200,
+      "step-04": 450,
+      "step-05": 180,
+      "step-05b": 60,
+      "step-06": 120,
+      "step-07": 90,
+      "step-08": 80,
+      "step-09": 30
+    },
+    "quality": {
+      "test_coverage": 87,
+      "security_score": 100,
+      "lint_issues": 0,
+      "review_iterations": 1,
+      "review_result": "APPROVED"
+    },
+    "summary": {
+      "total_duration_seconds": 1555,
+      "total_duration_formatted": "25m 55s",
+      "average_step_duration": 138.5,
+      "bottleneck_step": "step-04 (Implementation: 450s)"
+    }
+  },
+  "last_updated": "2025-12-29T03:10:55+07:00"
+}

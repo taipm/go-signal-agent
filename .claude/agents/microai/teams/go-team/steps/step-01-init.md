@@ -7,15 +7,69 @@ checkpoint:
   enabled: true
   id_format: "cp-01-init"
   auto_create: true
+session:
+  auto_save: true
+  auto_save_interval: 30
+  resumable: true
 ---
 
 # Step 01: Session Initialization
 
 ## STEP GOAL
 
-Initialize the Go Team session by gathering project context, loading relevant files, and preparing the workflow state.
+Initialize the Go Team session by gathering project context, loading relevant files, and preparing the workflow state. **Check for interrupted sessions and offer resume option.**
 
 ## EXECUTION SEQUENCE
+
+### 0. Check for Interrupted Sessions (NEW)
+
+```markdown
+BEFORE starting new session:
+
+1. Load session registry
+   ```
+   registry = load_json("./checkpoints/sessions.json")
+   ```
+
+2. Find interrupted/resumable sessions
+   ```
+   resumable = registry.sessions.filter(s =>
+     s.status in ["interrupted", "paused"] && s.resumable
+   )
+   ```
+
+3. IF resumable sessions found:
+   ```
+   ═══════════════════════════════════════════════════════════
+   ⚠️  INTERRUPTED SESSIONS FOUND
+   ═══════════════════════════════════════════════════════════
+
+   Found {count} session(s) that can be resumed:
+
+   ┌────┬──────────────────┬─────────────────────────┬────────┬────────────┐
+   │ #  │ Session ID       │ Topic                   │ Step   │ Status     │
+   ├────┼──────────────────┼─────────────────────────┼────────┼────────────┤
+   │ 1  │ session-abc123   │ user-auth-service       │ 4/9    │ interrupted│
+   │ 2  │ session-def456   │ payment-gateway         │ 6/9    │ paused     │
+   └────┴──────────────────┴─────────────────────────┴────────┴────────────┘
+
+   Commands:
+   - *resume         → Resume most recent session
+   - *resume:1       → Resume session #1
+   - *resume:{id}    → Resume by session ID
+   - *new            → Start new session (ignore above)
+   - *abandon:{id}   → Abandon session permanently
+
+   ═══════════════════════════════════════════════════════════
+   ```
+
+4. IF *resume selected:
+   - Load session recovery protocol
+   - Skip to "Resume Session" section below
+
+5. IF *new or no interrupted sessions:
+   - Continue to step 1 (Welcome Observer)
+```
 
 ### 1. Welcome Observer
 
@@ -190,6 +244,232 @@ After init complete:
 
    Press [Enter] to continue to Requirements phase...
    ═══════════════════════════════════════════
+   ```
+```
+
+---
+
+## SESSION MANAGEMENT INTEGRATION
+
+### Initialize Session Registry
+
+```markdown
+On workflow start:
+
+1. Ensure sessions.json exists
+   ```
+   if not exists("./checkpoints/sessions.json"):
+     create_file("./checkpoints/sessions.json", {
+       "version": "1.0.0",
+       "sessions": [],
+       "last_active_session": null
+     })
+   ```
+
+2. Register new session
+   ```json
+   {
+     "id": "{session_id}",
+     "topic": "{topic}",
+     "status": "active",
+     "created_at": "{now}",
+     "updated_at": "{now}",
+     "current_step": 1,
+     "current_checkpoint": null,
+     "progress": {
+       "steps_completed": 0,
+       "total_steps": 9,
+       "percentage": 0
+     },
+     "git_branch": "go-team/{session_id}",
+     "resumable": true
+   }
+   ```
+
+3. Start auto-save timer
+   ```
+   auto_save_timer = start_timer(interval=30s, callback=save_live_state)
+   ```
+
+4. Display session info
+   ```
+   ═══════════════════════════════════════════
+   SESSION REGISTERED
+   ═══════════════════════════════════════════
+
+   Session ID: {session_id}
+   Auto-save: Enabled (every 30s)
+
+   If interrupted, resume with:
+     *resume or *resume:{session_id}
+   ═══════════════════════════════════════════
+   ```
+```
+
+### Resume Session Protocol
+
+```markdown
+When *resume or *resume:{id} is triggered:
+
+1. Load session data
+   ```
+   session = load_session(id)
+   manifest = load_manifest(session.id)
+   recovery = load_recovery_metadata(session.id)
+   ```
+
+2. Display recovery options
+   ```
+   ═══════════════════════════════════════════════════════════
+   SESSION RECOVERY
+   ═══════════════════════════════════════════════════════════
+
+   Session: {session.id}
+   Topic: {session.topic}
+   Interrupted: {recovery.interrupted_at}
+   Last step: {session.current_step} - {step_name}
+
+   Recovery Options:
+
+   [1] Resume from checkpoint (RECOMMENDED)
+       └─ Checkpoint: {recovery.last_checkpoint}
+       └─ Data loss: ~{actions} actions since checkpoint
+       └─ Safe and reliable
+
+   [2] Resume from auto-save (EXPERIMENTAL)
+       └─ Last save: {state.saved_at}
+       └─ Data loss: ~30 seconds
+       └─ May have inconsistencies
+
+   [3] Start fresh from step 1
+       └─ Discard all progress
+       └─ Clean slate
+
+   Enter choice [1/2/3]:
+   ═══════════════════════════════════════════════════════════
+   ```
+
+3. Execute recovery
+
+   **Option 1: Checkpoint Recovery**
+   ```
+   checkpoint = load_checkpoint(session.id, recovery.last_checkpoint)
+
+   # Restore git
+   git checkout {checkpoint.git.branch}
+   git reset --hard {checkpoint.git.commit_hash}
+
+   # Restore state
+   go_team_state = checkpoint.state
+   outputs = checkpoint.outputs
+
+   # Update registry
+   session.status = "active"
+   save_registry()
+   ```
+
+   **Option 2: Auto-Save Recovery**
+   ```
+   live_state = load_live_state(session.id)
+   go_team_state = live_state.state
+   outputs = live_state.outputs
+
+   # Attempt git restore
+   try:
+     git checkout {session.git_branch}
+   catch:
+     warn("Git state may be inconsistent")
+   ```
+
+4. Confirm and continue
+   ```
+   ═══════════════════════════════════════════
+   ✓ SESSION RESUMED SUCCESSFULLY
+   ═══════════════════════════════════════════
+
+   Session: {session.id}
+   Current step: {current_step} - {step_name}
+   Recovery type: {checkpoint|auto-save}
+
+   State restored. Ready to continue.
+
+   Press [Enter] to proceed to step {current_step + 1}...
+   ═══════════════════════════════════════════
+   ```
+```
+
+### Auto-Save Protocol
+
+```markdown
+Every 30 seconds (or on important actions):
+
+1. Capture live state
+   ```json
+   {
+     "session_id": "{session_id}",
+     "saved_at": "{now}",
+     "save_trigger": "auto|action",
+     "state": {go_team_state},
+     "outputs": {current_outputs},
+     "context": {
+       "last_action": "{description}",
+       "current_file": "{file}",
+       "pending_tasks": [...]
+     },
+     "recovery_point": {
+       "checkpoint": "{last_checkpoint}",
+       "actions_since_checkpoint": {count}
+     }
+   }
+   ```
+
+2. Write atomically
+   ```
+   write_atomic("./checkpoints/{session_id}/state.json", live_state)
+   ```
+
+3. Update registry
+   ```
+   registry.sessions[session_id].updated_at = now()
+   save_registry()
+   ```
+```
+
+### Interrupt Detection
+
+```markdown
+On session end without normal exit:
+
+1. Detect interrupt
+   - Ctrl+C captured → status = "paused"
+   - Timeout → status = "interrupted"
+   - Error → status = "interrupted"
+
+2. Save final state
+   ```
+   save_live_state(force=true)
+   ```
+
+3. Create recovery metadata
+   ```json
+   {
+     "session_id": "{id}",
+     "interrupted_at": "{now}",
+     "interrupt_reason": "{reason}",
+     "last_known_state": {
+       "step": {step},
+       "agent": "{agent}",
+       "action": "{action}"
+     },
+     "recovery_options": [...]
+   }
+   ```
+
+4. Update registry
+   ```
+   session.status = "interrupted"
+   session.resumable = true
+   save_registry()
    ```
 ```
 

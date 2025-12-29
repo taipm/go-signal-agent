@@ -1,0 +1,48 @@
+{
+  "session_id": "test-session-001",
+  "interrupted_at": "2025-12-28T21:45:00Z",
+  "interrupt_reason": "timeout",
+
+  "last_known_state": {
+    "step": 4,
+    "step_name": "implementation",
+    "agent": "go-coder-agent",
+    "action": "Writing file internal/service/auth_service.go"
+  },
+
+  "recovery_options": [
+    {
+      "type": "checkpoint",
+      "id": 1,
+      "target": "cp-04-implementation-20251228-214500",
+      "description": "Resume from last checkpoint (safe)",
+      "data_loss": "12 actions since checkpoint",
+      "recommended": true
+    },
+    {
+      "type": "live_state",
+      "id": 2,
+      "target": "state.json",
+      "description": "Resume from last auto-save (experimental)",
+      "data_loss": "~30 seconds of work",
+      "recommended": false
+    },
+    {
+      "type": "fresh_start",
+      "id": 3,
+      "target": null,
+      "description": "Start fresh from step 1",
+      "data_loss": "All progress",
+      "recommended": false
+    }
+  ],
+
+  "recommended": "checkpoint",
+  "auto_resume_enabled": true,
+
+  "git_state": {
+    "branch": "go-team/test-session-001",
+    "last_commit": "d4e5f6789012345678901234567890abcdef0123",
+    "uncommitted_changes": true
+  }
+}

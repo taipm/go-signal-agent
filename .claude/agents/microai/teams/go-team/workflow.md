@@ -17,13 +17,72 @@ checkpoint:
   storage_path: ./.claude/agents/microai/teams/go-team/checkpoints
   git_integration: true
   auto_checkpoint: true
+communication:
+  enabled: true
+  bus_path: ./.claude/agents/microai/teams/go-team/communication
+  message_timeout_ms: 5000
+  max_retries: 3
+  topics:
+    - requirements
+    - architecture
+    - code_change
+    - testing
+    - security
+    - review
+    - performance
+    - release
+    - workflow
+autonomous:
+  enabled: false
+  level: balanced
+  auto_approve:
+    specs: true
+    architecture: true
+    code_changes: true
+    security_low_medium: true
+    security_high_critical: false
+  thresholds:
+    min_coverage: 80
+    max_iterations: 3
+parallel:
+  enabled: false
+  max_workers: 3
+  parallelizable_groups:
+    - name: quality_assurance
+      steps: [step-05-testing, step-05b-security]
+    - name: review_fixes
+      agents: [go-coder-agent, test-agent]
+kanban:
+  enabled: true
+  board_path: ./.claude/agents/microai/teams/go-team/kanban/go-team-board.yaml
+  queue_path: ./.claude/agents/microai/teams/go-team/kanban/signal-queue.json
+  sync_mode: semi_automatic
+  signals:
+    on_step_start: true
+    on_step_complete: true
+    on_agent_activate: true
+    on_security_gate: true
+    on_session_complete: true
+  wip_enforcement: true
+  commands:
+    - "*board"
+    - "*board:full"
+    - "*status"
+    - "*metrics"
+    - "*wip"
 ---
 
 # Go Team Workflow - Hybrid Orchestrator
 
-**Mục tiêu:** Điều phối team 8 agents để phát triển Go application từ requirements đến release.
+**Mục tiêu:** Điều phối team 12 agents (bao gồm Orchestrator, Security Agent, Fixer Agent, và Doc Agent) để phát triển Go application từ requirements đến release với security-first approach và documentation-complete.
 
-**Vai trò của bạn:** Bạn là Orchestrator điều phối workflow giữa các agents, đảm bảo handoff đúng thứ tự, và cho phép observer can thiệp tại các breakpoints.
+**Vai trò của bạn:** Bạn là Orchestrator Agent - điều phối workflow giữa các agents, phân tích yêu cầu user, lựa chọn workflow phù hợp, đảm bảo handoff đúng thứ tự, và cho phép observer can thiệp tại các breakpoints.
+
+**Orchestrator Mode:** Khi user gọi go-team, Orchestrator Agent sẽ:
+1. Phân tích yêu cầu và phân loại (new_feature, bugfix, refactor, etc.)
+2. Lựa chọn workflow phù hợp (full pipeline, quick fix, security fix, etc.)
+3. Điều phối các agents theo workflow đã chọn
+4. Báo cáo tiến độ và tổng hợp kết quả
 
 ---
 
@@ -35,6 +94,10 @@ User Request
 ┌─────────────────────────────────────────────────────────────┐
 │ Step 01: Init - Load context, setup session                 │
 ├─────────────────────────────────────────────────────────────┤
+│ Step 01b: Codebase Analysis (if existing code detected)     │
+│    ⚙️  Analyze structure, patterns, interfaces, style       │
+│    📋 Inject context to all agents                          │
+├─────────────────────────────────────────────────────────────┤
 │ Step 02: Requirements - PM Agent gathers specs              │
 │    ═══════════════ [BREAKPOINT] ═══════════════            │
 ├─────────────────────────────────────────────────────────────┤
@@ -45,9 +108,14 @@ User Request
 ├─────────────────────────────────────────────────────────────┤
 │ Step 05: Testing - Test Agent writes tests                  │
 ├─────────────────────────────────────────────────────────────┤
+│ Step 05b: Security Audit - Security Agent scans for vulns   │
+│    ═══════════════ [SECURITY GATE] ═══════════════         │
+│    ⛔ BLOCKS on Critical/High vulnerabilities               │
+├─────────────────────────────────────────────────────────────┤
 │ Step 06: Review Loop (max 3 iterations)                     │
 │    ┌──────────────────────────────────────────────────────┐ │
-│    │ Reviewer → Feedback → Coder/Test → Fix → Repeat      │ │
+│    │ Reviewer → [Decision] → Fixer (simple) → Test        │ │
+│    │                       → Coder (complex) → Test       │ │
 │    │ EXIT: All tests pass + lint clean                    │ │
 │    └──────────────────────────────────────────────────────┘ │
 │    ═══════════════ [BREAKPOINT] ═══════════════            │
@@ -55,6 +123,9 @@ User Request
 │ Step 07: Optimization - Optimizer improves performance      │
 ├─────────────────────────────────────────────────────────────┤
 │ Step 08: Release - DevOps creates deployment artifacts      │
+├─────────────────────────────────────────────────────────────┤
+│ Step 08b: Documentation - Doc Agent generates docs          │
+│    📝 README.md, API docs, CHANGELOG, godoc comments        │
 ├─────────────────────────────────────────────────────────────┤
 │ Step 09: Synthesis - Final report and handoff               │
 └─────────────────────────────────────────────────────────────┘
@@ -70,17 +141,36 @@ Final Output
 ```yaml
 installed_path: "{project-root}/.claude/agents/microai/teams/go-team"
 agents:
+  # Core orchestration
+  orchestrator: "{installed_path}/agents/orchestrator-agent.md"
+
+  # Development pipeline agents
   pm: "{installed_path}/agents/pm-agent.md"
   architect: "{installed_path}/agents/architect-agent.md"
   coder: "{installed_path}/agents/go-coder-agent.md"
   test: "{installed_path}/agents/test-agent.md"
+  security: "{installed_path}/agents/security-agent.md"
   reviewer: "{installed_path}/agents/reviewer-agent.md"
+  fixer: "{installed_path}/agents/fixer-agent.md"
   optimizer: "{installed_path}/agents/optimizer-agent.md"
   devops: "{installed_path}/agents/devops-agent.md"
+  doc: "{installed_path}/agents/doc-agent.md"
+
+  # Support agents
+  kanban: "{project-root}/.claude/agents/microai/agents/kanban-agent.md"
+
+# Agent Registry - Auto-discovered agents
+agent_registry:
+  auto_discover: true
+  scan_paths:
+    - "{installed_path}/agents/*.md"
+    - "{project-root}/.claude/agents/microai/agents/*.md"
+  refresh_on_start: true
 templates:
   spec: "{installed_path}/templates/spec-template.md"
   architecture: "{installed_path}/templates/architecture-template.md"
   code_review: "{installed_path}/templates/code-review-template.md"
+  security_report: "{installed_path}/templates/security-report-template.md"
   release_notes: "{installed_path}/templates/release-notes-template.md"
 output_path: "./docs/go-team/{date}-{topic}.md"
 ```
@@ -94,9 +184,27 @@ go_team_state:
   phase: "init"
   current_agent: null
   current_step: 1
-  iteration_count: 0
-  max_iterations: 3
   breakpoint_active: false
+
+  # Codebase mode
+  codebase:
+    mode: "greenfield"  # or "extend"
+    analyzed: false
+    module_name: null
+    patterns: {}
+    interfaces: []
+    types: []
+    style_guide: null
+    agent_context: {}
+
+  # Configurable limits
+  config:
+    max_iterations: 3        # Range: 1-10, default: 3
+    min_coverage: 80         # Range: 50-100, default: 80
+    lint_required: true      # Require lint clean
+    race_check: true         # Require race-free
+
+  iteration_count: 0
   outputs:
     spec: null
     architecture: null
@@ -105,11 +213,24 @@ go_team_state:
     review_comments: []
     optimizations: []
     release_config: null
-  metrics:
+  quality_metrics:
     build_pass: false
     test_coverage: 0
     lint_clean: false
     race_free: false
+
+  token_metrics:
+    total_input: 0
+    total_output: 0
+    total_cached: 0
+    by_agent: {}
+    by_step: {}
+    cost:
+      model: "claude-3-5-sonnet"
+      total: 0.0
+      budget: null
+      budget_warning_percent: 80
+
   history: []
 
   # Checkpoint state extension
@@ -156,6 +277,161 @@ go_team_state:
 | `*rollback:cp-{id}` | Rollback to specific checkpoint ID |
 | `*cp-export` | Export all checkpoints to archive |
 | `*cp-validate` | Validate integrity of all checkpoints |
+
+### Session Management Commands
+
+| Command | Effect |
+|---------|--------|
+| `*sessions` | List all sessions (active, interrupted, completed) |
+| `*resume` | Resume last interrupted session |
+| `*resume:{id}` | Resume specific session by ID |
+| `*session-info` | Show current session details |
+| `*session-info:{id}` | Show specific session details |
+| `*abandon:{id}` | Mark session as abandoned (no resume) |
+| `*cleanup` | Clean up old/completed sessions |
+
+### Agent Communication Commands
+
+| Command | Effect |
+|---------|--------|
+| `@ask:{agent} "{question}"` | Query specific agent for information |
+| `@notify:{topic} "{message}"` | Send notification to topic subscribers |
+| `@request:{agent} "{task}"` | Request collaboration from agent |
+| `@broadcast "{message}"` | Broadcast message to all agents |
+| `*msg-queue` | Show pending messages in queue |
+| `*msg-history` | Show recent message history |
+
+### Quick Communication Shortcuts
+
+| Shortcut | Expands To | Use Case |
+|----------|------------|----------|
+| `?arch {q}` | `@ask:architect "{q}"` | Coder asks Architect |
+| `?test {q}` | `@ask:test "{q}"` | Any agent asks Test |
+| `?sec {q}` | `@ask:security "{q}"` | Any agent asks Security |
+| `!fix {desc}` | `@request:coder "{desc}"` | Reviewer requests fix |
+| `!test {desc}` | `@request:test "{desc}"` | Reviewer requests test |
+| `!vuln {desc}` | `@request:coder "{desc}"` | Security reports vuln |
+
+### Kanban Board Commands
+
+| Command | Effect |
+|---------|--------|
+| `*board` | Display current kanban board |
+| `*board:full` | Display full board with all columns |
+| `*status` | Quick status (current step, agent, progress) |
+| `*metrics` | Show session metrics (signals, durations) |
+| `*wip` | Show WIP status per column |
+| `*signals` | Show recent signals emitted |
+
+### Autonomous Mode Commands
+
+| Command | Effect |
+|---------|--------|
+| `*auto` | Enable autonomous mode (balanced level) |
+| `*auto:cautious` | Enable with conservative settings |
+| `*auto:balanced` | Enable with balanced settings |
+| `*auto:aggressive` | Enable with maximum speed |
+| `*auto:off` | Disable autonomous mode |
+| `*auto:status` | Show autonomous mode status |
+| `*auto:log` | Show decision log |
+
+### Parallel Execution Commands
+
+| Command | Effect |
+|---------|--------|
+| `*parallel` | Enable parallel execution (3 workers) |
+| `*parallel:N` | Enable with N workers |
+| `*parallel:max` | Maximum parallelism |
+| `*parallel:off` | Disable parallel execution |
+| `*parallel:status` | Show worker status |
+| `*parallel:queue` | Show task queue |
+
+### Configuration Commands
+
+| Command | Effect |
+|---------|--------|
+| `*config` | Show all configuration |
+| `*config:{key}` | Show specific config value |
+| `*config:{key}={value}` | Set config value |
+
+### Iteration Control Commands
+
+| Command | Effect |
+|---------|--------|
+| `*iterations` | Show current iteration limit |
+| `*iterations:N` | Set max iterations to N (1-10) |
+| `*iterations:+N` | Add N more iterations |
+| `*iterations:reset` | Reset to default (3) |
+
+### Coverage Threshold Commands
+
+| Command | Effect |
+|---------|--------|
+| `*coverage` | Show current coverage threshold |
+| `*coverage:N` | Set min coverage to N% (50-100) |
+| `*coverage:reset` | Reset to default (80%) |
+
+### Token & Cost Tracking Commands
+
+| Command | Effect |
+|---------|--------|
+| `*tokens` | Show token usage summary |
+| `*tokens:detail` | Show detailed breakdown |
+| `*tokens:agent:{name}` | Show tokens for specific agent |
+| `*tokens:step:{N}` | Show tokens for specific step |
+| `*tokens:export` | Export metrics to JSON |
+
+### Cost Commands
+
+| Command | Effect |
+|---------|--------|
+| `*cost` | Show cost estimate |
+| `*cost:detail` | Show detailed cost breakdown |
+| `*cost:history` | Show historical costs |
+
+### Budget Commands
+
+| Command | Effect |
+|---------|--------|
+| `*budget:set {amount}` | Set session budget limit (e.g., `*budget:set 5.00`) |
+| `*budget:warn {%}` | Set warning threshold (default: 80%) |
+| `*budget:status` | Show budget status |
+| `*budget:add {amount}` | Add to current budget |
+| `*budget:clear` | Clear budget limit |
+
+### Codebase Analysis Commands
+
+| Command | Effect |
+|---------|--------|
+| `*analyze` | Run full codebase analysis |
+| `*analyze:structure` | Analyze directory structure |
+| `*analyze:patterns` | Detect code patterns |
+| `*analyze:interfaces` | List existing interfaces |
+| `*analyze:types` | List existing types/models |
+| `*analyze:deps` | Show dependencies |
+| `*analyze:style` | Extract style conventions |
+| `*analyze:report` | Generate full report |
+
+### Context Commands
+
+| Command | Effect |
+|---------|--------|
+| `*context:show` | Show injected codebase context |
+| `*context:refresh` | Re-analyze and refresh context |
+| `*extend:{interface}` | Show how to extend interface |
+| `*reuse:{type}` | Show how to reuse type |
+
+### Kanban Commands
+
+| Command | Effect |
+|---------|--------|
+| `*board` | Show go-team kanban board |
+| `*board:full` | Show full board with all columns |
+| `*board:session` | Show current session tasks |
+| `*board:agents` | Show agent workload |
+| `*metrics:kanban` | Show kanban metrics |
+| `*wip` | Show current WIP status |
+| `*wip:{agent}` | Show WIP for specific agent |
 
 ---
 
@@ -251,7 +527,7 @@ Observer Controls: [Enter] continue | *pause | *skip-to:N | *exit
 
 **Load:** `./steps/step-06-review-loop.md`
 
-**Agents:** Reviewer + Coder + Test
+**Agents:** Reviewer + Fixer + Coder + Test
 
 **Loop Protocol:**
 ```
@@ -260,9 +536,14 @@ WHILE (iteration_count < max_iterations) AND (NOT all_checks_pass):
   1. Reviewer reviews code
      - Run: go vet, golangci-lint, go test -race
      - Document issues
+     - Classify: simple vs complex
 
-  2. IF critical_issues > 0:
-     - Coder fixes issues
+  2. IF issues_found > 0:
+     - FOR EACH issue:
+       - IF simple (lint, style, <20 lines):
+         → Route to Fixer Agent
+       - IF complex (logic, architecture, >20 lines):
+         → Route to Coder Agent
      - Test Agent updates tests if needed
      - iteration_count++
 
@@ -275,6 +556,19 @@ WHILE (iteration_count < max_iterations) AND (NOT all_checks_pass):
      - lint_clean = true
      - race_free = true
 ```
+
+**Routing Decision Matrix:**
+| Issue Type          | Lines Changed | Route To |
+|---------------------|---------------|----------|
+| Lint/Style          | any           | Fixer    |
+| Naming convention   | <10           | Fixer    |
+| Error wrapping      | <10           | Fixer    |
+| Add mutex           | <15           | Fixer    |
+| Input validation    | <20           | Fixer    |
+| Algorithm change    | any           | Coder    |
+| Interface change    | any           | Coder    |
+| New feature logic   | any           | Coder    |
+| Critical security   | any           | Coder    |
 
 **BREAKPOINT:** Observer reviews final code quality
 
@@ -302,6 +596,33 @@ WHILE (iteration_count < max_iterations) AND (NOT all_checks_pass):
 2. Creates GitHub Actions CI/CD
 3. Creates Makefile
 4. Prepares release notes
+
+### Step 8b: Documentation
+
+**Load:** `./steps/step-08b-documentation.md`
+
+**Agent:** Doc Agent
+
+**Actions:**
+1. Generate/update README.md
+2. Create API documentation
+3. Validate godoc comments on exported functions
+4. Update CHANGELOG.md
+5. Create Architecture Decision Records (if needed)
+6. Add usage examples
+
+**Quality Gates:**
+- README has all required sections
+- Exported functions have godoc comments (≥80%)
+- At least one runnable example exists
+
+**Output:**
+```
+Documentation Report:
+- Files: README.md, docs/API.md, CHANGELOG.md
+- Coverage: 95% exported functions documented
+- Examples: 3 runnable examples added
+```
 
 ### Step 9: Final Synthesis
 

@@ -3,7 +3,12 @@ stepNumber: 6
 nextStep: './step-07-optimization.md'
 agent: reviewer-agent
 hasBreakpoint: true
-maxIterations: 3
+iteration:
+  default: 3
+  min: 1
+  max: 10
+  configurable: true
+  extend_on_request: true
 checkpoint:
   enabled: true
   id_format: "cp-06-review-{iteration}"
@@ -22,27 +27,129 @@ Reviewer Agent reviews code quality, runs static analysis, and iterates with Cod
 Load persona từ `../agents/reviewer-agent.md`
 
 Secondary agents (for fixes):
-- `../agents/go-coder-agent.md`
-- `../agents/test-agent.md`
+- `../agents/fixer-agent.md` - For simple fixes (lint, style, <20 lines)
+- `../agents/go-coder-agent.md` - For complex fixes (architecture, logic)
+- `../agents/test-agent.md` - For test updates
 
 ## LOOP PROTOCOL
 
 ```
 iteration = 0
-max_iterations = 3
+max_iterations = get_config("iteration.default") || 3  # Configurable!
 
 WHILE (iteration < max_iterations) AND (NOT all_checks_pass):
 
   1. Reviewer Agent reviews code
-  2. IF critical_issues > 0:
-       - Coder Agent fixes issues
+     - Run static analysis
+     - Classify issues: SIMPLE vs COMPLEX
+
+  2. IF issues_found > 0:
+       - FOR EACH issue:
+           IF is_simple_fix(issue):
+             → Route to Fixer Agent
+           ELSE:
+             → Route to Coder Agent
        - iteration++
+
   3. ELSE:
        - EXIT loop (success)
 
 IF iteration >= max_iterations AND NOT all_checks_pass:
   - Present status to observer
   - Ask: continue, accept, or abort
+```
+
+## FIX ROUTING DECISION
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     ISSUE CLASSIFICATION                         │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │
+              ┌─────────────┴─────────────┐
+              │  Analyze issue scope       │
+              └─────────────┬─────────────┘
+                            │
+         ┌──────────────────┴──────────────────┐
+         │                                     │
+         ▼                                     ▼
+┌─────────────────────┐              ┌─────────────────────┐
+│   SIMPLE FIX        │              │   COMPLEX FIX       │
+│   → Fixer Agent     │              │   → Coder Agent     │
+├─────────────────────┤              ├─────────────────────┤
+│ • Lint/style issues │              │ • Algorithm changes │
+│ • < 20 lines change │              │ • Interface changes │
+│ • Error wrapping    │              │ • Architecture mods │
+│ • Add mutex/sync    │              │ • New feature logic │
+│ • Input validation  │              │ • Critical security │
+│ • Comment/docs      │              │ • > 20 lines change │
+└─────────────────────┘              └─────────────────────┘
+```
+
+### Routing Matrix
+
+| Issue Category | Criteria | Route To | Model |
+|----------------|----------|----------|-------|
+| Lint/Style | Any size | Fixer | sonnet |
+| Naming | < 10 lines | Fixer | sonnet |
+| Error wrapping | < 10 lines | Fixer | sonnet |
+| Add mutex | < 15 lines | Fixer | sonnet |
+| Input validation | < 20 lines | Fixer | sonnet |
+| Algorithm | Any size | Coder | opus |
+| Interface change | Any size | Coder | opus |
+| New logic | Any size | Coder | opus |
+| Critical security | Any size | Coder | opus |
+| > 20 lines | Any type | Coder | opus |
+
+## ITERATION CONFIGURATION
+
+### Default Settings
+
+```yaml
+iteration:
+  default: 3          # Default max iterations
+  min: 1              # Minimum allowed
+  max: 10             # Maximum allowed
+  configurable: true  # Can be changed at runtime
+  extend_on_request: true  # Allow extending when max reached
+```
+
+### Configuration Commands
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `*iterations` | Show current iteration config | - |
+| `*iterations:N` | Set max iterations to N | `*iterations:5` |
+| `*iterations:+N` | Add N more iterations | `*iterations:+2` |
+| `*iterations:reset` | Reset to default (3) | - |
+
+### Runtime Examples
+
+```bash
+# Before starting review loop
+*iterations:5       # Allow up to 5 iterations
+
+# During review loop (when max reached)
+*iterations:+2      # Add 2 more iterations and continue
+
+# Reset to default
+*iterations:reset   # Back to 3
+```
+
+### Configuration via Workflow
+
+In `workflow.md`, set iteration limit:
+
+```yaml
+go_team_state:
+  max_iterations: 5  # Override default
+```
+
+Or via command:
+
+```bash
+# At session start
+*config:max_iterations=5
 ```
 
 ## EXECUTION SEQUENCE
@@ -128,20 +235,51 @@ Reviewer checks:
 
 ### 5. Fix Issues (if any)
 
-IF critical_issues > 0:
+IF issues_found > 0:
 
+#### Route to Fixer Agent (Simple Fixes)
+```
+[Fixer Agent]
+
+Fixing {N} simple issues...
+
+Fix 1: Lint - missing comment (simple)
+{show code change}
+
+Fix 2: Error wrapping (simple)
+{show code change}
+
+Verification: go build ./... ✓
+
+Passing to Test Agent for re-run...
+```
+
+#### Route to Coder Agent (Complex Fixes)
 ```
 [Go Coder Agent]
 
-Fixing {N} critical issues...
+Fixing {N} complex issues...
 
-Fix 1: Race condition
+Fix 1: Race condition (complex - needs sync.RWMutex pattern)
 {show code change}
 
-Fix 2: Unchecked error
+Fix 2: Algorithm rewrite (complex - performance issue)
 {show code change}
 
 Re-running tests...
+```
+
+#### Escalation from Fixer to Coder
+```
+[Fixer Agent]
+
+⚠️ ESCALATION: Issue too complex
+
+Issue: "Refactor authentication flow"
+Estimated changes: 45 lines
+Reason: Exceeds 20-line threshold, requires interface change
+
+Returning to Orchestrator → Route to Coder Agent
 ```
 
 ### 6. Re-Review

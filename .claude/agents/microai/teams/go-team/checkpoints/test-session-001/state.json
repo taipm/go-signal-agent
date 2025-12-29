@@ -1,0 +1,53 @@
+{
+  "session_id": "test-session-001",
+  "saved_at": "2025-12-28T21:44:30Z",
+  "save_trigger": "auto",
+
+  "state": {
+    "topic": "user-authentication-service",
+    "date": "2025-12-28",
+    "phase": "implementation",
+    "current_agent": "go-coder-agent",
+    "current_step": 4,
+    "iteration_count": 0,
+    "max_iterations": 3,
+    "breakpoint_active": false,
+    "metrics": {
+      "build_pass": true,
+      "test_coverage": 0,
+      "lint_clean": false,
+      "race_free": false
+    }
+  },
+
+  "context": {
+    "last_action": "Implementing auth service layer",
+    "pending_tasks": [
+      "Complete token service",
+      "Wire dependency injection in main.go"
+    ],
+    "current_file": "internal/service/auth_service.go",
+    "current_line": 67
+  },
+
+  "outputs": {
+    "spec": "[Requirements spec content]",
+    "architecture": "[Architecture design content]",
+    "code_files": [
+      "cmd/auth-service/main.go",
+      "internal/handler/auth_handler.go",
+      "internal/service/auth_service.go",
+      "internal/repo/user_repo.go",
+      "internal/model/user.go"
+    ],
+    "test_files": [],
+    "review_comments": [],
+    "partial_output": "Implementing Login method..."
+  },
+
+  "recovery_point": {
+    "checkpoint": "cp-04-implementation-20251228-214500",
+    "actions_since_checkpoint": 12,
+    "can_resume_from_action": true
+  }
+}

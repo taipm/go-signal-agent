@@ -1,0 +1,86 @@
+{
+  "queue_id": "go-team-default",
+  "version": "1.0.0",
+  "created_at": "2025-12-28T22:00:00Z",
+  "updated_at": "2025-12-28T22:30:00Z",
+
+  "configuration": {
+    "max_queue_size": 100,
+    "message_ttl_seconds": 3600,
+    "default_timeout_ms": 5000,
+    "max_retries": 3,
+    "priority_levels": ["critical", "high", "normal", "low"]
+  },
+
+  "statistics": {
+    "total_messages": 0,
+    "delivered": 0,
+    "pending": 0,
+    "failed": 0,
+    "avg_response_time_ms": 0
+  },
+
+  "pending_messages": [],
+
+  "message_history": [],
+
+  "agent_status": {
+    "orchestrator": {
+      "status": "active",
+      "last_active": "2025-12-28T22:30:00Z",
+      "subscribed_topics": ["workflow"]
+    },
+    "pm-agent": {
+      "status": "idle",
+      "last_active": null,
+      "subscribed_topics": ["requirements", "workflow"]
+    },
+    "architect-agent": {
+      "status": "idle",
+      "last_active": null,
+      "subscribed_topics": ["requirements", "architecture", "workflow"]
+    },
+    "go-coder-agent": {
+      "status": "idle",
+      "last_active": null,
+      "subscribed_topics": ["architecture", "review", "security", "workflow"]
+    },
+    "test-agent": {
+      "status": "idle",
+      "last_active": null,
+      "subscribed_topics": ["architecture", "review", "testing", "workflow"]
+    },
+    "security-agent": {
+      "status": "idle",
+      "last_active": null,
+      "subscribed_topics": ["code_change", "security", "workflow"]
+    },
+    "reviewer-agent": {
+      "status": "idle",
+      "last_active": null,
+      "subscribed_topics": ["code_change", "testing", "security", "workflow"]
+    },
+    "optimizer-agent": {
+      "status": "idle",
+      "last_active": null,
+      "subscribed_topics": ["review", "performance", "workflow"]
+    },
+    "devops-agent": {
+      "status": "idle",
+      "last_active": null,
+      "subscribed_topics": ["review", "release", "workflow"]
+    }
+  },
+
+  "topic_subscriptions": {
+    "requirements": ["pm-agent", "architect-agent"],
+    "architecture": ["architect-agent", "go-coder-agent", "test-agent"],
+    "code_change": ["security-agent", "reviewer-agent"],
+    "testing": ["test-agent", "reviewer-agent"],
+    "security": ["go-coder-agent", "reviewer-agent", "security-agent"],
+    "review": ["go-coder-agent", "test-agent", "optimizer-agent", "devops-agent"],
+    "performance": ["optimizer-agent"],
+    "release": ["devops-agent"],
+    "workflow": ["orchestrator", "pm-agent", "architect-agent", "go-coder-agent", "test-agent", "security-agent", "reviewer-agent", "optimizer-agent", "devops-agent"]
+  }
+}

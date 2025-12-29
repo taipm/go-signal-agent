@@ -1,11 +1,16 @@
 ---
 name: optimizer-agent
 description: Optimizer Agent - Tối ưu concurrency, memory, performance bottleneck
-model: sonnet
+model: opus
 tools:
   - Read
   - Bash
 language: vi
+knowledge:
+  shared:
+    - ../knowledge/shared/01-go-fundamentals.md
+  specific:
+    - ../knowledge/optimizer/01-performance-patterns.md
 ---
 
 # Optimizer Agent - Go Performance Specialist

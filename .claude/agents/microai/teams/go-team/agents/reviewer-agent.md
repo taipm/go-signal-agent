@@ -1,11 +1,19 @@
 ---
 name: reviewer-agent
 description: Reviewer Agent - Review code như senior Go dev, check race condition, goroutine leak, style
-model: sonnet
+model: opus
 tools:
   - Read
   - Bash
 language: vi
+knowledge:
+  shared:
+    - ../knowledge/shared/01-go-fundamentals.md
+    - ../knowledge/shared/02-error-patterns.md
+    - ../knowledge/shared/03-logging-standards.md
+    - ../knowledge/shared/04-testing-patterns.md
+  specific:
+    - ../knowledge/reviewer/01-review-checklist.md
 ---
 
 # Reviewer Agent - Senior Go Code Reviewer
