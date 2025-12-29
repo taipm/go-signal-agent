@@ -1,0 +1,319 @@
+# Knowledge Index for go-dev-agent
+#
+# This index enables RELEVANCE-BASED loading instead of loading ALL files.
+# Each knowledge file is mapped to topics and keywords for selective retrieval.
+#
+# Usage:
+#   1. Extract keywords from user task
+#   2. Match keywords against this index
+#   3. Load ONLY files with matching topics
+#   4. Fallback to core files if no match (08, 10)
+#
+# Format:
+#   file: filename
+#   topics: broad categories
+#   keywords: specific terms that trigger this file
+#   priority: 1=always load, 2=load if relevant, 3=load only if explicitly needed
+#   size: approximate lines (for budget planning)
+
+version: "1.0"
+last_updated: "2025-12-29"
+
+# Core files (always consider)
+core_files:
+  - "08-anti-patterns.md"
+  - "10-learned-anti-patterns.md"
+
+# Knowledge entries
+knowledge:
+  - file: "02-graceful-shutdown.md"
+    topics:
+      - shutdown
+      - signals
+      - cleanup
+      - lifecycle
+    keywords:
+      - graceful
+      - shutdown
+      - SIGINT
+      - SIGTERM
+      - signal
+      - cleanup
+      - defer
+      - context.Done
+      - os.Signal
+      - notify
+      - interrupt
+      - terminate
+      - exit
+      - close
+      - lifecycle
+    priority: 2
+    size: 355
+    description: "Signal handling, graceful shutdown, cleanup patterns"
+
+  - file: "03-interactive-cli.md"
+    topics:
+      - cli
+      - stdin
+      - interactive
+      - terminal
+      - input
+    keywords:
+      - stdin
+      - interactive
+      - cli
+      - command
+      - terminal
+      - input
+      - readline
+      - bufio
+      - scanner
+      - prompt
+      - REPL
+      - keyboard
+      - console
+      - flag
+      - cobra
+    priority: 2
+    size: 431
+    description: "Interactive CLI patterns, stdin handling, REPL"
+
+  - file: "04-http-patterns.md"
+    topics:
+      - http
+      - server
+      - client
+      - api
+      - web
+      - rest
+    keywords:
+      - http
+      - server
+      - client
+      - handler
+      - middleware
+      - router
+      - request
+      - response
+      - timeout
+      - REST
+      - API
+      - endpoint
+      - gin
+      - chi
+      - echo
+      - mux
+      - ListenAndServe
+      - net/http
+      - JSON
+      - status
+      - header
+    priority: 2
+    size: 534
+    description: "HTTP server/client, middleware, timeouts, REST patterns"
+
+  - file: "05-llm-openai-go.md"
+    topics:
+      - llm
+      - openai
+      - ai
+      - chat
+      - gpt
+    keywords:
+      - openai
+      - llm
+      - gpt
+      - chat
+      - completion
+      - embedding
+      - token
+      - streaming
+      - AI
+      - model
+      - prompt
+      - assistant
+      - function
+      - tool
+      - claude
+      - anthropic
+      - sashabaranov
+    priority: 2
+    size: 714
+    description: "OpenAI SDK integration, chat completions, streaming, tools"
+
+  - file: "06-concurrency.md"
+    topics:
+      - concurrency
+      - goroutine
+      - channel
+      - sync
+      - parallel
+    keywords:
+      - goroutine
+      - channel
+      - mutex
+      - sync
+      - concurrent
+      - parallel
+      - worker
+      - pool
+      - WaitGroup
+      - errgroup
+      - atomic
+      - race
+      - lock
+      - unlock
+      - semaphore
+      - select
+      - deadlock
+      - chan
+    priority: 1
+    size: 631
+    description: "Concurrency patterns, worker pools, synchronization"
+
+  - file: "07-llm-ollama-local.md"
+    topics:
+      - llm
+      - ollama
+      - local
+      - ai
+    keywords:
+      - ollama
+      - local
+      - llm
+      - llama
+      - mistral
+      - codellama
+      - phi
+      - gemma
+      - embedding
+      - generate
+      - pull
+      - model
+    priority: 3
+    size: 636
+    description: "Ollama local LLM integration, model management"
+
+  - file: "08-anti-patterns.md"
+    topics:
+      - antipattern
+      - mistake
+      - wrong
+      - avoid
+      - bug
+    keywords:
+      - antipattern
+      - anti-pattern
+      - mistake
+      - wrong
+      - avoid
+      - bug
+      - error
+      - leak
+      - race
+      - panic
+      - nil
+      - deadlock
+      - broken
+    priority: 1
+    size: 483
+    description: "Common Go anti-patterns and how to avoid them"
+
+  - file: "09-learned-patterns.md"
+    topics:
+      - pattern
+      - learned
+      - best
+      - practice
+    keywords:
+      - pattern
+      - learned
+      - best
+      - practice
+      - correct
+      - good
+      - recommended
+    priority: 2
+    size: 100
+    description: "Patterns discovered through experience (evolving)"
+
+  - file: "10-learned-anti-patterns.md"
+    topics:
+      - antipattern
+      - learned
+      - mistake
+      - avoid
+    keywords:
+      - antipattern
+      - anti-pattern
+      - learned
+      - mistake
+      - avoid
+      - signal
+      - timeout
+      - context
+    priority: 1
+    size: 250
+    description: "Anti-patterns discovered through experience (evolving)"
+
+  - file: "11-project-decisions.md"
+    topics:
+      - decision
+      - architecture
+      - design
+      - choice
+    keywords:
+      - decision
+      - architecture
+      - design
+      - choice
+      - trade-off
+      - tradeoff
+      - why
+      - rationale
+      - alternative
+    priority: 3
+    size: 150
+    description: "Architectural decisions and rationale"
+
+# Keyword aliases (normalize common variations)
+aliases:
+  goroutines: goroutine
+  channels: channel
+  mutexes: mutex
+  signals: signal
+  handlers: handler
+  servers: server
+  clients: client
+  patterns: pattern
+  errors: error
+  timeouts: timeout
+
+# Topic groups (for broader matching)
+topic_groups:
+  web:
+    - http
+    - server
+    - client
+    - api
+    - rest
+  ai:
+    - llm
+    - openai
+    - ollama
+    - ai
+    - chat
+    - gpt
+  concurrent:
+    - concurrency
+    - goroutine
+    - channel
+    - sync
+    - parallel
+  safety:
+    - antipattern
+    - mistake
+    - avoid
+    - bug
+    - error

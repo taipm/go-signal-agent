@@ -1,0 +1,10 @@
+# Raw Learnings Directory
+
+This directory contains daily learning captures.
+
+Files are named: `YYYY-MM-DD-{session}.md`
+
+These are temporary and will be:
+- Escalated to pending/ if significant
+- Archived after 30 days
+- Cleaned up via `*learn-cleanup`
